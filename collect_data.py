@@ -3,25 +3,56 @@ from utils import auth, api
 import json
 from pprint import pprint
 
+'''
+Get friends
+'''
+# friends = tweepy.Cursor(api.get_friends).items(30)
+# for i, f in enumerate(friends):
+#     print(f'{i}. {f.screen_name}, ID: {f.id}')
+# print(type(friends))
 
-tweet_data = []
-query = 'NBA Finals 2022'
-# for status in tweepy.Cursor(api.home_timeline).items(2):
-for status in tweepy.Cursor(api.search_tweets, q=query, lang='en', result_type='mixed', count=10).items(10):
+'''
+Data collection and storage
+'''
+tweet_data = {}
+for status in tweepy.Cursor(api.home_timeline).items(30):
     # Process a single status
-    tweet_data.append(status._json)
+    user = status.user
+    print(user.screen_name)
+    if user.screen_name in tweet_data:
+        # tweet_data[user.screen_name] = tweet_data[user.screen_name].append(status)
+        tweet_data[user.screen_name] += [status._json]
+    else:
+        tweet_data[user.screen_name] = [status._json]
 
-with open('empty.json', 'r') as f:
-    # Load currently stored json array
-    data = json.load(f)
-    # Append existing data with new data
-    data = data + tweet_data
-    with open('empty.json', 'w') as f2:
-        # Dump appended data to file
-        json.dump(data, f2)
-        f2.close()
+with open('data.json', 'w') as f:
+    # Dump appended data to file
+    json.dump(tweet_data, f)
     f.close()
 
+'''
+Data collection and storage
+'''
+# tweet_data = []
+# query = 'NBA Finals 2022'
+# # for status in tweepy.Cursor(api.home_timeline).items(2):
+# for status in tweepy.Cursor(api.search_tweets, q=query, lang='en', result_type='mixed', count=10).items(10):
+#     # Process a single status
+#     tweet_data.append(status._json)
+
+# with open('empty.json', 'r') as f:
+#     # Load currently stored json array
+#     data = json.load(f)
+#     # Append existing data with new data
+#     data = data + tweet_data
+#     with open('empty.json', 'w') as f2:
+#         # Dump appended data to file
+#         json.dump(data, f2)
+#         f2.close()
+#     f.close()
+'''
+Dict parsing
+'''
 # query = 'NBA Finals 2022'
 # # Create list of dictionaries of tweet data
 # tweets = [tweet._json for tweet in tweepy.Cursor(
