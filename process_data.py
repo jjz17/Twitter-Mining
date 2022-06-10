@@ -5,6 +5,7 @@ from collections import Counter
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
 from pprint import pprint
+from numpy import argmax
  
 '''
 Example
@@ -77,6 +78,8 @@ for user, tweets in data.items():
 
         scores = output[0][0].detach().numpy()
         scores = softmax(scores)
+        ind = argmax(scores)
 
         for label, score in zip(labels, scores):
             print(f'\t{label}: {score}')
+        print(f'Classification: {labels[ind]}')
