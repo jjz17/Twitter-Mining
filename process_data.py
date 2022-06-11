@@ -56,30 +56,36 @@ def preprocess_text(text: str) -> str:
     return ' '.join(words)
 
 
-# Load model and tokenizer
-roberta = "cardiffnlp/twitter-roberta-base-sentiment"
+def main():
+    # Load model and tokenizer
+    roberta = "cardiffnlp/twitter-roberta-base-sentiment"
 
-model = AutoModelForSequenceClassification.from_pretrained(roberta)
-tokenizer = AutoTokenizer.from_pretrained(roberta)
+    model = AutoModelForSequenceClassification.from_pretrained(roberta)
+    tokenizer = AutoTokenizer.from_pretrained(roberta)
 
-labels = ['Negative', 'Neutral', 'Positive']
+    labels = ['Negative', 'Neutral', 'Positive']
 
-data = get_text_data()
-for user, tweets in data.items():
-    print(f'User: {user}')
-    for tweet in tweets:
-        print(f'Tweet: {tweet}')
-        processed_text = preprocess_text(tweet)
+    data = get_text_data()
+    for user, tweets in data.items():
+        print(f'User: {user}')
+        for tweet in tweets:
+            print(f'Tweet: {tweet}')
+            processed_text = preprocess_text(tweet)
 
-        # sentiment analysis
-        encoded_tweet = tokenizer(processed_text, return_tensors='pt')
-        # output = model(encoded_tweet['input_ids'], encoded_tweet['attention_mask'])
-        output = model(**encoded_tweet)
+            # sentiment analysis
+            encoded_tweet = tokenizer(processed_text, return_tensors='pt')
+            # output = model(encoded_tweet['input_ids'], encoded_tweet['attention_mask'])
+            output = model(**encoded_tweet)
 
-        scores = output[0][0].detach().numpy()
-        scores = softmax(scores)
-        ind = argmax(scores)
+            # Convert output pytorch tensor to numpy array by detaching the computational graph
+            scores = output[0][0].detach().numpy()
+            scores = softmax(scores)
+            ind = argmax(scores)
 
-        for label, score in zip(labels, scores):
-            print(f'\t{label}: {score}')
-        print(f'Classification: {labels[ind]}')
+            for label, score in zip(labels, scores):
+                print(f'\t{label}: {score}')
+            print(f'Classification: {labels[ind]}')
+
+
+if __name__ == '__main__':
+    main()
