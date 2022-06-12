@@ -6,6 +6,11 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
 from pprint import pprint
 from numpy import argmax
+import dash
+from dash import dcc
+from dash import html
+import pandas as pd
+
  
 '''
 Example
@@ -65,9 +70,12 @@ def main():
 
     labels = ['Negative', 'Neutral', 'Positive']
 
+    csv = pd.DataFrame(columns=['User', 'Negative', 'Neutral', 'Positive'])
+
     data = get_text_data()
     for user, tweets in data.items():
         print(f'User: {user}')
+        neg, neu, pos = 0,0,0
         for tweet in tweets:
             print(f'Tweet: {tweet}')
             processed_text = preprocess_text(tweet)
@@ -84,7 +92,20 @@ def main():
 
             for label, score in zip(labels, scores):
                 print(f'\t{label}: {score}')
-            print(f'Classification: {labels[ind]}')
+
+            classification = labels[ind]
+            print(f'Classification: {classification}')
+            if classification == 'Negative':
+                neg += 1
+            elif classification == 'Neutral':
+                neu += 1
+            else:
+                pos += 1
+        row = pd.Series({'User': user, 'Negative': neg, 'Neutral': neu, 'Positive': pos})
+        # csv = pd.concat([csv, row], ignore_index=True)
+        csv = csv.append(row, ignore_index=True)
+    print(csv)
+    csv.to_csv('sentiment.csv', index=False)
 
 
 if __name__ == '__main__':
