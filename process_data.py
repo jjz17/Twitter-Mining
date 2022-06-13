@@ -11,40 +11,24 @@ from dash import dcc
 from dash import html
 import pandas as pd
 
- 
-'''
-Example
-'''
-# with open('empty.json', 'r') as f:
-#     counter = Counter()
-#     tweets = json.load(f) # load it as a list of Python dicts
-#     for tweet in tweets:
-#         # Create a list with all the terms
-#         terms_all = [term for term in word_tokenize(tweet['text'])]
-#         # Update the counter
-#         counter.update(terms_all)
-#     # Print the first 5 most frequent words
-#     print(counter.most_common(5))
-#     # print(json.dumps(tweet, indent=4)) # pretty-print
-#     # print(type(tweets[0]), len(tweets))
 
-# with open('data.json', 'r') as f:
-#     data = json.load(f)
-#     for user, tweets in data.items():
-#         print(f'User: {user}')
-#         for tweet in tweets:
-#             print(f'Tweet: {tweet["text"]}')
+def get_data_dict():
+    '''
+    Returns the collected Tweet json data as a dict
+    '''
+    with open('data.json', 'r') as file:
+        data = json.load(file)
+    return data
 
 def get_text_data():
     '''
     Extract tweet texts
     '''
-    with open('data.json', 'r') as f:
-        data = json.load(f)
-        simple_data = {}
-        for user, tweets in data.items():
-            simple_data[user] = [tweet['text'] for tweet in tweets]
-    return(simple_data)
+    data = get_data_dict()
+    simple_data = {}
+    for user, tweets in data.items():
+        simple_data[user] = [tweet['text'] for tweet in tweets]
+    return simple_data 
 
 
 def preprocess_text(text: str) -> str:
