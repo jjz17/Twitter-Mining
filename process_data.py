@@ -92,12 +92,25 @@ def analyize_sentiment(file_path):
                 pos += 1
             tweet['sentiment'] = classification
         row = pd.DataFrame([{'User': user, 'Negative': neg,
-                        'Neutral': neu, 'Positive': pos}])
+                             'Neutral': neu, 'Positive': pos}])
         csv = pd.concat([csv, row], ignore_index=True)
         # csv = csv.append(row, ignore_index=True)
     print(csv)
     csv.to_csv('sentiment.csv', index=False)
     dump_data_dict(data, file_path)
 
+
+def generate_timestamp_csv(file_path):
+    data = get_data_dict(file_path)
+    csv = pd.DataFrame(columns=['User', 'Text', 'Sentiment', 'Time'])
+    for user, tweets in data.items():
+        for tweet in tweets:
+            row = pd.DataFrame([{'User': user, 'Text': tweet['text'],
+                        'Sentiment': tweet['sentiment'], 'Time': tweet['created_at']}])
+            csv = pd.concat([csv, row], ignore_index=True)
+    csv.to_csv('time_tweet.csv', index=False)
+
+
 if __name__ == '__main__':
-    analyize_sentiment('data2022-06-13 13:59:42.json')
+    # analyize_sentiment('data2022-06-13 13:59:42.json')
+    generate_timestamp_csv('data2022-06-13 13:59:42.json')

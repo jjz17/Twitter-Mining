@@ -2,8 +2,11 @@ from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import pandas as pd
 
-data = pd.read_csv('sentiment.csv')
-# data = data.query("User == 'NovusOrdoWatch'")
+sentiment_data = pd.read_csv('sentiment.csv')
+# sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
+time_data = pd.read_csv('time_tweet.csv')
+# time_data = time_data.groupby(['User', 'Time']).count()
+print(time_data)
 
 app = Dash(__name__)
 
@@ -15,21 +18,33 @@ app.layout = html.Div(
         ),
         dcc.Dropdown(
             id='dropdown',
-            options=data['User'],
-            value=data['User'],
+            options=sentiment_data['User'],
+            value=sentiment_data['User'],
             multi=True
         ),
-        dcc.Graph(id='bar')
+        dcc.Graph(id='bar'),
+        dcc.Graph(id='line')
     ]
 )
 
+
 @app.callback(
-    Output('bar', 'figure'), 
+    Output('bar', 'figure'),
     Input('dropdown', 'value'))
 def update_bar_chart(users):
-    mask = data['User'].isin(users)
-    fig = px.bar(data[mask], x='User', y=['Negative', 'Neutral', 'Positive'], labels={'value': 'Count', 'variable': 'Sentiment'})
+    mask = sentiment_data['User'].isin(users)
+    fig = px.bar(sentiment_data[mask], x='User', y=[
+                 'Negative', 'Neutral', 'Positive'], labels={'value': 'Count', 'variable': 'Sentiment'})
     return fig
+
+
+@app.callback(
+    Output('line', 'figure'),
+    Input('dropdown', 'value'))
+def update_line_chart(users):
+    fig = px.line(time_data, x='Time', y='User')
+    return fig
+
 
 if __name__ == '__main__':
     app.run(debug=True)
