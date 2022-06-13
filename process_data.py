@@ -6,24 +6,33 @@ from numpy import argmax
 import pandas as pd
 
 
-def get_data_dict():
+def get_data_dict(file_path):
     '''
     Returns the collected Tweet json data as a dict
     '''
-    with open('data.json', 'r') as file:
+    with open(file_path, 'r') as file:
         data = json.load(file)
     return data
 
 
-def get_text_data():
+def get_text_data(file_path):
     '''
     Extract tweet texts
     '''
-    data = get_data_dict()
+    data = get_data_dict(file_path)
     simple_data = {}
     for user, tweets in data.items():
         simple_data[user] = [tweet['text'] for tweet in tweets]
     return simple_data
+
+
+def dump_data_dict(data_dict, file_path):
+    '''
+    Dumps the dict as a json file
+    '''
+    with open(file_path, 'w') as file:
+        json.dump(data_dict, file)
+        file.close()
 
 
 def preprocess_text(text: str) -> str:
@@ -40,7 +49,7 @@ def preprocess_text(text: str) -> str:
     return ' '.join(words)
 
 
-def main():
+def analyize_sentiment(file_path):
     # Load model and tokenizer
     roberta = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 
@@ -51,13 +60,14 @@ def main():
 
     csv = pd.DataFrame(columns=['User', 'Negative', 'Neutral', 'Positive'])
 
-    data = get_text_data()
+    # data = get_text_data(file_path)
+    data = get_data_dict(file_path)
     for user, tweets in data.items():
         print(f'User: {user}')
         neg, neu, pos = 0, 0, 0
         for tweet in tweets:
-            print(f'Tweet: {tweet}')
-            processed_text = preprocess_text(tweet)
+            print(f'Tweet: {tweet["text"]}')
+            processed_text = preprocess_text(tweet['text'])
 
             # sentiment analysis
             encoded_tweet = tokenizer(processed_text, return_tensors='pt')
@@ -80,13 +90,14 @@ def main():
                 neu += 1
             else:
                 pos += 1
-        row = pd.Series({'User': user, 'Negative': neg,
-                        'Neutral': neu, 'Positive': pos})
-        # csv = pd.concat([csv, row], ignore_index=True)
-        csv = csv.append(row, ignore_index=True)
+            tweet['sentiment'] = classification
+        row = pd.DataFrame([{'User': user, 'Negative': neg,
+                        'Neutral': neu, 'Positive': pos}])
+        csv = pd.concat([csv, row], ignore_index=True)
+        # csv = csv.append(row, ignore_index=True)
     print(csv)
     csv.to_csv('sentiment.csv', index=False)
-
+    dump_data_dict(data, file_path)
 
 if __name__ == '__main__':
-    main()
+    analyize_sentiment('data2022-06-13 13:59:42.json')

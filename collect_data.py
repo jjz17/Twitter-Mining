@@ -2,6 +2,7 @@ import tweepy
 from utils import auth, api
 import json
 from pprint import pprint
+from datetime import datetime
 
 '''
 Get friends
@@ -15,20 +16,20 @@ Get friends
 Data collection and storage
 '''
 tweet_data = {}
-for status in tweepy.Cursor(api.home_timeline).items(30):
+for i, status in enumerate(tweepy.Cursor(api.home_timeline).items(100)):
     # Process a single status
     user = status.user
-    print(user.screen_name)
+    print(f'{i}. {user.screen_name}')
     if user.screen_name in tweet_data:
         # tweet_data[user.screen_name] = tweet_data[user.screen_name].append(status)
         tweet_data[user.screen_name] += [status._json]
     else:
         tweet_data[user.screen_name] = [status._json]
 
-with open('data.json', 'w') as f:
+with open(f'data{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.json', 'w') as file:
     # Dump appended data to file
-    json.dump(tweet_data, f)
-    f.close()
+    json.dump(tweet_data, file)
+    file.close()
 
 '''
 Data collection and storage
