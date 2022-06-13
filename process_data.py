@@ -6,9 +6,6 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
 from pprint import pprint
 from numpy import argmax
-import dash
-from dash import dcc
-from dash import html
 import pandas as pd
 
 
@@ -20,6 +17,7 @@ def get_data_dict():
         data = json.load(file)
     return data
 
+
 def get_text_data():
     '''
     Extract tweet texts
@@ -28,7 +26,7 @@ def get_text_data():
     simple_data = {}
     for user, tweets in data.items():
         simple_data[user] = [tweet['text'] for tweet in tweets]
-    return simple_data 
+    return simple_data
 
 
 def preprocess_text(text: str) -> str:
@@ -59,7 +57,7 @@ def main():
     data = get_text_data()
     for user, tweets in data.items():
         print(f'User: {user}')
-        neg, neu, pos = 0,0,0
+        neg, neu, pos = 0, 0, 0
         for tweet in tweets:
             print(f'Tweet: {tweet}')
             processed_text = preprocess_text(tweet)
@@ -85,7 +83,8 @@ def main():
                 neu += 1
             else:
                 pos += 1
-        row = pd.Series({'User': user, 'Negative': neg, 'Neutral': neu, 'Positive': pos})
+        row = pd.Series({'User': user, 'Negative': neg,
+                        'Neutral': neu, 'Positive': pos})
         # csv = pd.concat([csv, row], ignore_index=True)
         csv = csv.append(row, ignore_index=True)
     print(csv)
