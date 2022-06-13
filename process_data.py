@@ -1,7 +1,4 @@
 import json
-from textwrap import indent
-from nltk.tokenize import word_tokenize
-from collections import Counter
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
 from pprint import pprint
@@ -45,7 +42,7 @@ def preprocess_text(text: str) -> str:
 
 def main():
     # Load model and tokenizer
-    roberta = "cardiffnlp/twitter-roberta-base-sentiment"
+    roberta = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 
     model = AutoModelForSequenceClassification.from_pretrained(roberta)
     tokenizer = AutoTokenizer.from_pretrained(roberta)
