@@ -13,3 +13,8 @@ May need to develop MySQL Schema for storage
 
 Dash Tutorial:
 https://realpython.com/python-dash/#:~:text=Dash%20is%20an%20open%20source,requiring%20advanced%20web%20development%20knowledge.
+
+Questions to answer:
+What are trends in the counts of pos/neu/neg posts over time (days)?
+Sort by sentiment?
+

@@ -49,7 +49,7 @@ def preprocess_text(text: str) -> str:
     return ' '.join(words)
 
 
-def analyize_sentiment(file_path):
+def analyze_sentiment(file_path):
     # Load model and tokenizer
     roberta = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 
@@ -105,12 +105,14 @@ def generate_timestamp_csv(file_path):
     csv = pd.DataFrame(columns=['User', 'Text', 'Sentiment', 'Time'])
     for user, tweets in data.items():
         for tweet in tweets:
+            time = tweet['created_at'].split()
+            parsed_time = ' '.join([time[0], time[1], time[2], time[5]])
             row = pd.DataFrame([{'User': user, 'Text': tweet['text'],
-                        'Sentiment': tweet['sentiment'], 'Time': tweet['created_at']}])
+                        'Sentiment': tweet['sentiment'], 'Time': parsed_time}])
             csv = pd.concat([csv, row], ignore_index=True)
     csv.to_csv('time_tweet.csv', index=False)
 
 
 if __name__ == '__main__':
-    # analyize_sentiment('data2022-06-13 13:59:42.json')
-    generate_timestamp_csv('data2022-06-13 13:59:42.json')
+    analyze_sentiment('data.json')
+    generate_timestamp_csv('data.json')

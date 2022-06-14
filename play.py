@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 
 # with open('data.json', 'r') as file:
 #     data = json.load(file)
@@ -6,50 +7,8 @@ import json
 #         for tweet in user_tweets:
 #             print(tweet['coordinates'])
 
-# with open('test.json', 'r') as infile, open('test.json', 'w') as outfile:
-#     try:
-#         data = json.load(infile)
-#         print(data)
-#         l = [1,2,3]
-#         for item in l:
-#             data[item] = item
-#         print(data)
-#         json.dump(data, outfile)
-#         infile.close()
-#         outfile.close()
-#     except json.JSONDecodeError:
-#         print('Error decoding JSON')
-#         data = {}
-#         l = [4,5,6]
-#         for item in l:
-#             data[item] = item
-#         json.dump(data, outfile)
-#         infile.close()
-#         outfile.close()
+sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
+# sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
+time_data = pd.read_csv('time_tweet.csv')
 
-
-with open('test.json', 'r') as infile:
-    try:
-        data = json.load(infile)
-        print(data)
-        l = [1,2,3]
-        for item in l:
-            if str(item) in data:
-                pass
-            else:
-                data[item] = item
-        print(data)
-        with open('test.json', 'w') as outfile:
-            json.dump(data, outfile)
-            infile.close()
-            outfile.close()
-    except:
-        data = {}
-        l = [4,5,6]
-        for item in l:
-            data[item] = item
-        print(data)
-        with open('test.json', 'w') as outfile:
-            json.dump(data, outfile)
-            infile.close()
-            outfile.close()
+print(time_data.groupby(['Time','User','Sentiment']).count())
