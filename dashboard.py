@@ -5,6 +5,7 @@ import pandas as pd
 sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
 time_data = pd.read_csv('time_tweet.csv')
+test = pd.read_csv('test.csv')
 # time_data = time_data.groupby(['User', 'Time']).count()
 # print(time_data)
 
@@ -45,7 +46,7 @@ def update_bar_chart(users):
     Output('line', 'figure'),
     Input('dropdown', 'value'))
 def update_line_chart(users):
-    fig = px.line(time_data, x='Time', y='User')
+    fig = px.line(test, x='Time', y='Text')
     return fig
 
 

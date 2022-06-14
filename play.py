@@ -10,5 +10,7 @@ import pandas as pd
 sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
 time_data = pd.read_csv('time_tweet.csv')
-
-print(time_data.groupby(['Time','User','Sentiment']).count())
+gb = time_data.groupby(['Time','User','Sentiment']).count()
+print(type(gb))
+gb.to_csv('test.csv', index=False
+)
