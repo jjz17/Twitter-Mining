@@ -1,3 +1,5 @@
+from re import X
+from time import time
 import click
 from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
@@ -16,6 +18,7 @@ for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']
         row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
                              'Count': frame.loc[date]['User']}])
         new_data = pd.concat([new_data, row], ignore_index=True)
+summary = time_data.groupby(['Time',]).count()
 
 app = Dash(__name__)
 
@@ -36,13 +39,13 @@ app.layout = html.Div(
             dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
         # dcc.Graph(id='bar'),
         # dcc.Graph(id='single'),
-        html.Div([dcc.Graph(), dcc.Graph(id='line')], style={
+        html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
                  'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
         # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
         #                      fixed_rows={'headers': True},
         #                      style_table={'height': 400}, id='data')  # defaults to 500)
         dash_table.DataTable(id='data_table', fixed_rows={'headers': True},
-                             style_table={'height': 400})
+                             style_table={'height': 400, 'overflowX': 'scroll'})
     ]
 )
 
