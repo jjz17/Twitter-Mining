@@ -31,20 +31,18 @@ app.layout = html.Div(
             value=sentiment_data['User'],
             multi=True
         ),
-        dcc.Graph(id='bar'),
         html.Div([
-            dcc.Markdown("""
-                **Click Data**
-
-                Click on points in the graph.
-            """),
-            html.Pre(id='click-data'),
-        ]),
-        dcc.Graph(id='single'),
-        dcc.Graph(id='line'),
-        dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
-                             fixed_rows={'headers': True},
-                             style_table={'height': 400})  # defaults to 500)
+            dcc.Graph(id='bar'),
+            dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+        # dcc.Graph(id='bar'),
+        # dcc.Graph(id='single'),
+        html.Div([dcc.Graph(), dcc.Graph(id='line')], style={
+                 'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+        # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
+        #                      fixed_rows={'headers': True},
+        #                      style_table={'height': 400}, id='data')  # defaults to 500)
+        dash_table.DataTable(id='data_table', fixed_rows={'headers': True},
+                             style_table={'height': 400})
     ]
 )
 
@@ -66,14 +64,20 @@ def update_bar_chart(users):
 
 @app.callback(
     Output('single', 'figure'),
+    Output('data_table', 'data'),
+    Output('data_table', 'columns'),
     Input('bar', 'hoverData'))
-def display_click_data(hoverData):
+def display_hover_data(hoverData):
     if hoverData:
         user = hoverData['points'][0]['x']
     else:
         user = 'kennedyhall'
-    fig = px.bar(sentiment_data[sentiment_data['User'] == user], x='User', y=['Negative', 'Neutral', 'Positive'])
-    return fig
+    fig = px.bar(sentiment_data[sentiment_data['User'] == user], x='User', y=[
+                 'Negative', 'Neutral', 'Positive'])
+    data = time_data[time_data['User'] == user]
+    table_data = data.to_dict('records')
+    columns = [{"name": i, "id": i} for i in data.columns]
+    return fig, table_data, columns
 
 
 @app.callback(
