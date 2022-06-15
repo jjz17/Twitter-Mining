@@ -1,13 +1,20 @@
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
 
 sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
 time_data = pd.read_csv('time_tweet.csv')
-test = pd.read_csv('test.csv')
-# time_data = time_data.groupby(['User', 'Time']).count()
-# print(time_data)
+neg = time_data[time_data['Sentiment'] == 'Negative']
+neu = time_data[time_data['Sentiment'] == 'Neutral']
+pos = time_data[time_data['Sentiment'] == 'Positive']
+new_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
+for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']):
+    frame = frame.groupby('Time').count()
+    for i, date in enumerate(frame.index):
+        row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
+                             'Count': frame.loc[date]['User']}])
+        new_data = pd.concat([new_data, row], ignore_index=True)
 
 app = Dash(__name__)
 
@@ -24,7 +31,10 @@ app.layout = html.Div(
             multi=True
         ),
         dcc.Graph(id='bar'),
-        dcc.Graph(id='line')
+        dcc.Graph(id='line'),
+        dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
+                             fixed_rows={'headers': True},
+                             style_table={'height': 400})  # defaults to 500)
     ]
 )
 
@@ -34,9 +44,10 @@ app.layout = html.Div(
     Input('dropdown', 'value'))
 def update_bar_chart(users):
     mask = sentiment_data['User'].isin(users)
-    color_discrete_map = {'Negative': 'rgb(255,0,0)', 'Neutral': 'rgb(255,255,0)', 'Positive': 'rgb(0,255,0)'}
+    color_discrete_map = {
+        'Negative': 'rgb(255,0,0)', 'Neutral': 'rgb(255,255,0)', 'Positive': 'rgb(0,255,0)'}
     fig = px.bar(sentiment_data[mask], x='User', y=[
-                 'Negative', 'Neutral', 'Positive'], 
+                 'Negative', 'Neutral', 'Positive'],
                  labels={'value': 'Count', 'variable': 'Sentiment'},
                  color_discrete_map=color_discrete_map)
     return fig
@@ -46,7 +57,7 @@ def update_bar_chart(users):
     Output('line', 'figure'),
     Input('dropdown', 'value'))
 def update_line_chart(users):
-    fig = px.line(test, x='Time', y='Text')
+    fig = px.line(new_data, x='Date', y='Count', color='Sentiment')
     return fig
 
 

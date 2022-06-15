@@ -33,14 +33,16 @@ Data collection and storage
 
 
 
-
+'''
+Retrieve last 100 tweets on personal home timeline
+'''
 tweets = tweepy.Cursor(api.home_timeline).items(100)
 with open('data.json', 'r') as infile:
     try:
         data = json.load(infile)
     except:
         data = {}
-        
+
     for i, status in enumerate(tweets):
         user = status.user
         print(f'{i}. {user.screen_name}')

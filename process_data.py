@@ -63,10 +63,10 @@ def analyze_sentiment(file_path):
     # data = get_text_data(file_path)
     data = get_data_dict(file_path)
     for user, tweets in data.items():
-        print(f'User: {user}')
+        # print(f'User: {user}')
         neg, neu, pos = 0, 0, 0
         for tweet in tweets:
-            print(f'Tweet: {tweet["text"]}')
+            # print(f'Tweet: {tweet["text"]}')
             processed_text = preprocess_text(tweet['text'])
 
             # sentiment analysis
@@ -80,10 +80,11 @@ def analyze_sentiment(file_path):
             ind = argmax(scores)
 
             for label, score in zip(labels, scores):
-                print(f'\t{label}: {score}')
+                # print(f'\t{label}: {score}')
+                pass
 
             classification = labels[ind]
-            print(f'Classification: {classification}')
+            # print(f'Classification: {classification}')
             if classification == 'Negative':
                 neg += 1
             elif classification == 'Neutral':
