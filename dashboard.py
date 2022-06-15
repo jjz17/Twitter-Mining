@@ -1,3 +1,4 @@
+import click
 from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
@@ -31,6 +32,15 @@ app.layout = html.Div(
             multi=True
         ),
         dcc.Graph(id='bar'),
+        html.Div([
+            dcc.Markdown("""
+                **Click Data**
+
+                Click on points in the graph.
+            """),
+            html.Pre(id='click-data'),
+        ]),
+        dcc.Graph(id='single'),
         dcc.Graph(id='line'),
         dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
                              fixed_rows={'headers': True},
@@ -50,6 +60,19 @@ def update_bar_chart(users):
                  'Negative', 'Neutral', 'Positive'],
                  labels={'value': 'Count', 'variable': 'Sentiment'},
                  color_discrete_map=color_discrete_map)
+    fig.update_layout(clickmode='event+select')
+    return fig
+
+
+@app.callback(
+    Output('single', 'figure'),
+    Input('bar', 'hoverData'))
+def display_click_data(hoverData):
+    if hoverData:
+        user = hoverData['points'][0]['x']
+    else:
+        user = 'kennedyhall'
+    fig = px.bar(sentiment_data[sentiment_data['User'] == user], x='User', y=['Negative', 'Neutral', 'Positive'])
     return fig
 
 
