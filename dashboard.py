@@ -163,12 +163,15 @@ app.layout = html.Div(
 
 @app.callback(
     Output('bar', 'figure'),
-    Input('users-select', 'value'))
-def update_bar_chart(users):
+    Input('users-select', 'value'),
+    Input("date-picker-select", "start_date"),
+    Input("date-picker-select", "end_date"),)
+def update_bar_chart(users, start, end):
     mask = sentiment_data['User'].isin(users)
+    data = sentiment_data[mask]
     color_discrete_map = {
         'Negative': 'rgb(255,0,0)', 'Neutral': 'rgb(255,255,0)', 'Positive': 'rgb(0,255,0)'}
-    fig = px.bar(sentiment_data[mask], x='User', y=[
+    fig = px.bar(data, x='User', y=[
                  'Negative', 'Neutral', 'Positive'],
                  labels={'value': 'Count', 'variable': 'Sentiment'},
                  color_discrete_map=color_discrete_map)
@@ -193,6 +196,16 @@ def display_hover_data(hoverData):
     columns = [{'name': i, 'id': i} for i in data.columns]
     return fig, table_data, columns
 
+
+@app.callback(
+    Output('summary', 'figure'),
+    Input("date-picker-select", "start_date"),
+    Input("date-picker-select", "end_date"),
+)
+def update_summary(start, end):
+    data = summary.loc[(summary.index >= start) & (summary.index <= end)]
+    fig = px.bar(data, x=data.index, y='User')
+    return fig
 
 @app.callback(
     Output('line', 'figure'),
