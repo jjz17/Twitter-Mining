@@ -64,6 +64,7 @@ def analyze_sentiment(file_path):
     data = get_data_dict(file_path)
     for user, tweets in data.items():
         # print(f'User: {user}')
+        print('working...')
         neg, neu, pos = 0, 0, 0
         for tweet in tweets:
             # print(f'Tweet: {tweet["text"]}')

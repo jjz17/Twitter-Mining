@@ -1,6 +1,3 @@
-from re import X
-from time import time
-import click
 from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
@@ -8,6 +5,7 @@ import pandas as pd
 sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
 time_data = pd.read_csv('time_tweet.csv')
+time_data['Time'] = pd.to_datetime(time_data['Time'])
 neg = time_data[time_data['Sentiment'] == 'Negative']
 neu = time_data[time_data['Sentiment'] == 'Neutral']
 pos = time_data[time_data['Sentiment'] == 'Positive']
@@ -18,41 +16,154 @@ for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']
         row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
                              'Count': frame.loc[date]['User']}])
         new_data = pd.concat([new_data, row], ignore_index=True)
-summary = time_data.groupby(['Time',]).count()
+summary = time_data.groupby(['Time', ]).count()
 
 app = Dash(__name__)
 
+
+def description_card():
+    '''
+    Return a div containing dashboard title and descriptions
+    '''
+    return html.Div(
+        id='description-card',
+        children=[
+            html.H5('Twitter Friends Analytics'),
+            html.H3('Welcome to the Twitter Friends Analytics Dashboard'),
+            html.Div(
+                id='intro',
+                children=('Explore trends in the sentiments of tweets posted by your Twitter friends. '
+                          'Use the dropdown menu and date picker to filter for your desired data. Hover over the bars for a focused view of a friend of choice.'),
+            ),
+        ],
+    )
+
+
+def generate_control_card():
+    '''
+    Returns a div containing controls for the graphs
+    '''
+    return html.Div(
+        id="control-card",
+        children=[
+            html.P("Select User(s)"),
+            dcc.Dropdown(
+                id="users-select",
+                options=[{"label": i, "value": i}
+                         for i in sentiment_data['User']],
+                value=sentiment_data['User'],
+                multi=True
+            ),
+            html.Br(),
+            html.P("Select Post Time"),
+            dcc.DatePickerRange(
+                id="date-picker-select",
+                start_date=time_data['Time'].min(),
+                end_date=time_data['Time'].max(),
+                min_date_allowed=time_data['Time'].min(),
+                max_date_allowed=time_data['Time'].max(),
+                initial_visible_month=time_data['Time'].min(),
+            ),
+            # html.Br(),
+            # html.Br(),
+            # html.P("Select Admit Source"),
+            # dcc.Dropdown(
+            #     id="admit-select",
+            #     options=[{"label": i, "value": i} for i in admit_list],
+            #     value=admit_list[:],
+            #     multi=True,
+            # ),
+            # html.Br(),
+            # html.Div(
+            #     id="reset-btn-outer",
+            #     children=html.Button(
+            #         id="reset-btn", children="Reset", n_clicks=0),
+            # ),
+        ],
+    )
+
+
+# app.layout = html.Div(
+#     children=[
+#         html.H1(children='Twitter Friends Analytics',),
+#         html.P(
+#             children='Gain insights on the sentiment of your Twitter friends" recent posts.',
+#         ),
+#         dcc.Dropdown(
+#             id='dropdown',
+#             options=sentiment_data['User'],
+#             value=sentiment_data['User'],
+#             multi=True
+#         ), dcc.DatePickerRange(
+#             id='date-picker-select',
+#             start_date=time_data['Time'].min(),
+#             end_date=time_data['Time'].max(),
+#             min_date_allowed=time_data['Time'].min(),
+#             max_date_allowed=time_data['Time'].max(),
+#             initial_visible_month=time_data['Time'].min(),
+#         ),
+#         html.Div([
+#             dcc.Graph(id='bar'),
+#             dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+#         # dcc.Graph(id='bar'),
+#         # dcc.Graph(id='single'),
+#         html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
+#                  'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+#         # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
+#         #                      fixed_rows={'headers': True},
+#         #                      style_table={'height': 400}, id='data')  # defaults to 500)
+#         dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
+#                              style_table={'height': 400, 'overflowX': 'scroll'})
+#     ]
+# )
+
+
 app.layout = html.Div(
+    id="app-container",
     children=[
-        html.H1(children='Twitter Friends Analytics',),
-        html.P(
-            children="Gain insights on the sentiment of your Twitter friends' recent posts.",
+        # Banner
+        html.Div(
+            id="banner",
+            className="banner",
+            # children=[html.Img(src=app.get_asset_url("plotly_logo.png"))],
         ),
-        dcc.Dropdown(
-            id='dropdown',
-            options=sentiment_data['User'],
-            value=sentiment_data['User'],
-            multi=True
+        # Left column
+        html.Div(
+            id="left-column",
+            className="four columns",
+            children=[description_card(), generate_control_card()]
+            + [
+                html.Div(
+                    ["initial child"], id="output-clientside", style={"display": "none"}
+                )
+            ],
         ),
-        html.Div([
-            dcc.Graph(id='bar'),
-            dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-        # dcc.Graph(id='bar'),
-        # dcc.Graph(id='single'),
-        html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
-                 'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-        # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
-        #                      fixed_rows={'headers': True},
-        #                      style_table={'height': 400}, id='data')  # defaults to 500)
-        dash_table.DataTable(id='data_table', fixed_rows={'headers': True},
-                             style_table={'height': 400, 'overflowX': 'scroll'})
-    ]
+        # Right column
+        html.Div(
+            id="right-column",
+            className="eight columns",
+            children=[
+                html.Div([
+                    dcc.Graph(id='bar'),
+                    dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+                # dcc.Graph(id='bar'),
+                # dcc.Graph(id='single'),
+                html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
+                    'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+                # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
+                #                      fixed_rows={'headers': True},
+                #                      style_table={'height': 400}, id='data')  # defaults to 500)
+                dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
+                                     style_table={'height': 400, 'overflowX': 'scroll'})
+            ],
+        ),
+    ],
 )
 
 
 @app.callback(
     Output('bar', 'figure'),
-    Input('dropdown', 'value'))
+    Input('users-select', 'value'))
 def update_bar_chart(users):
     mask = sentiment_data['User'].isin(users)
     color_discrete_map = {
@@ -67,8 +178,8 @@ def update_bar_chart(users):
 
 @app.callback(
     Output('single', 'figure'),
-    Output('data_table', 'data'),
-    Output('data_table', 'columns'),
+    Output('data-table', 'data'),
+    Output('data-table', 'columns'),
     Input('bar', 'hoverData'))
 def display_hover_data(hoverData):
     if hoverData:
@@ -79,13 +190,13 @@ def display_hover_data(hoverData):
                  'Negative', 'Neutral', 'Positive'])
     data = time_data[time_data['User'] == user]
     table_data = data.to_dict('records')
-    columns = [{"name": i, "id": i} for i in data.columns]
+    columns = [{'name': i, 'id': i} for i in data.columns]
     return fig, table_data, columns
 
 
 @app.callback(
     Output('line', 'figure'),
-    Input('dropdown', 'value'))
+    Input('users-select', 'value'))
 def update_line_chart(users):
     fig = px.line(new_data, x='Date', y='Count', color='Sentiment')
     return fig
