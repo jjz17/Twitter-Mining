@@ -54,6 +54,11 @@ def generate_control_card():
                 value=sentiment_data['User'],
                 multi=True
             ),
+            dcc.Dropdown(
+                id='sort-select',
+                options=['Alphabetical', 'Tweet Count'],
+                # value='Alphabetical'
+            ),
             html.Br(),
             html.P("Select Post Time"),
             dcc.DatePickerRange(
@@ -164,11 +169,22 @@ app.layout = html.Div(
 @app.callback(
     Output('bar', 'figure'),
     Input('users-select', 'value'),
+    Input('sort-select', 'value'),
     Input("date-picker-select", "start_date"),
     Input("date-picker-select", "end_date"),)
-def update_bar_chart(users, start, end):
+def update_bar_chart(users, sort, start, end):
     mask = sentiment_data['User'].isin(users)
     data = sentiment_data[mask]
+
+    if sort == 'Alphabetical':
+        data = data.sort_values('User')
+        print(sort)
+    elif sort == 'Tweet Count':
+        data['total count'] = data[['Negative', 'Neutral', 'Positive']].sum(axis=1)
+        data = data.sort_values('total count')
+        data.drop('total count', axis=1, inplace=True)
+        print(sort)
+
     color_discrete_map = {
         'Negative': 'rgb(255,0,0)', 'Neutral': 'rgb(255,255,0)', 'Positive': 'rgb(0,255,0)'}
     fig = px.bar(data, x='User', y=[
