@@ -67,6 +67,14 @@ def analyze_sentiment(file_path):
         print('working...')
         neg, neu, pos = 0, 0, 0
         for tweet in tweets:
+
+
+            '''
+            Check if tweet has already been assigned sentiment classification
+            '''
+
+
+
             # print(f'Tweet: {tweet["text"]}')
             processed_text = preprocess_text(tweet['text'])
 

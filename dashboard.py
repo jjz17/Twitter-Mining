@@ -54,6 +54,7 @@ def generate_control_card():
                 value=sentiment_data['User'],
                 multi=True
             ),
+            html.P("Sort By"),
             dcc.Dropdown(
                 id='sort-select',
                 options=['Alphabetical', 'Tweet Count'],
@@ -190,7 +191,7 @@ def update_bar_chart(users, sort, start, end):
     fig = px.bar(data, x='User', y=[
                  'Negative', 'Neutral', 'Positive'],
                  labels={'value': 'Count', 'variable': 'Sentiment'},
-                 color_discrete_map=color_discrete_map)
+                 color_discrete_map=color_discrete_map, title='Aggregate Sentiment Count per User')
     fig.update_layout(clickmode='event+select')
     return fig
 
