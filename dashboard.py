@@ -207,7 +207,7 @@ def display_hover_data(hoverData):
     else:
         user = 'kennedyhall'
     fig = px.bar(sentiment_data[sentiment_data['User'] == user], x='User', y=[
-                 'Negative', 'Neutral', 'Positive'])
+                 'Negative', 'Neutral', 'Positive'], title='Tweets by Selected User')
     data = time_data[time_data['User'] == user]
     table_data = data.to_dict('records')
     columns = [{'name': i, 'id': i} for i in data.columns]
