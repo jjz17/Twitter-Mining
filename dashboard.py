@@ -60,6 +60,14 @@ def generate_control_card():
                 options=['Alphabetical', 'Tweet Count'],
                 # value='Alphabetical'
             ),
+            html.P("Filter Sentiment"),
+            dcc.Dropdown(
+                id='sentiment-select',
+                options=[{"label": i, "value": i}
+                         for i in ['Negative', 'Neutral', 'Positive']],
+                value=['Negative', 'Neutral', 'Positive'],
+                multi=True
+            ),
             html.Br(),
             html.P("Select Post Time"),
             dcc.DatePickerRange(
@@ -226,9 +234,11 @@ def update_summary(start, end):
 
 @app.callback(
     Output('line', 'figure'),
-    Input('users-select', 'value'))
-def update_line_chart(users):
-    fig = px.line(new_data, x='Date', y='Count', color='Sentiment')
+    Input('users-select', 'value'),
+    Input('sentiment-select', 'value'))
+def update_line_chart(users, sentiments):
+    line_data = new_data[new_data['Sentiment'].isin(sentiments)]
+    fig = px.line(line_data, x='Date', y='Count', color='Sentiment')
     return fig
 
 
