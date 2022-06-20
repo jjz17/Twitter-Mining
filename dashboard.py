@@ -221,7 +221,7 @@ def display_hover_data(hoverData):
 )
 def update_summary(start, end):
     data = summary.loc[(summary.index >= start) & (summary.index <= end)]
-    fig = px.bar(data, x=data.index, y='User')
+    fig = px.bar(data, x=data.index, y='User', title='Sample Title')
     return fig
 
 @app.callback(
