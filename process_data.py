@@ -72,27 +72,28 @@ def analyze_sentiment(file_path):
             '''
             Check if tweet has already been assigned sentiment classification
             '''
+            if 'sentiment' in tweet:
+                print('Already classified')
+                classification = tweet['sentiment']
+            else:
+                # print(f'Tweet: {tweet["text"]}')
+                processed_text = preprocess_text(tweet['text'])
 
+                # sentiment analysis
+                encoded_tweet = tokenizer(processed_text, return_tensors='pt')
+                # output = model(encoded_tweet['input_ids'], encoded_tweet['attention_mask'])
+                output = model(**encoded_tweet)
 
+                # Convert output pytorch tensor to numpy array by detaching the computational graph
+                scores = output[0][0].detach().numpy()
+                scores = softmax(scores)
+                ind = argmax(scores)
 
-            # print(f'Tweet: {tweet["text"]}')
-            processed_text = preprocess_text(tweet['text'])
+                for label, score in zip(labels, scores):
+                    # print(f'\t{label}: {score}')
+                    pass
 
-            # sentiment analysis
-            encoded_tweet = tokenizer(processed_text, return_tensors='pt')
-            # output = model(encoded_tweet['input_ids'], encoded_tweet['attention_mask'])
-            output = model(**encoded_tweet)
-
-            # Convert output pytorch tensor to numpy array by detaching the computational graph
-            scores = output[0][0].detach().numpy()
-            scores = softmax(scores)
-            ind = argmax(scores)
-
-            for label, score in zip(labels, scores):
-                # print(f'\t{label}: {score}')
-                pass
-
-            classification = labels[ind]
+                classification = labels[ind]
             # print(f'Classification: {classification}')
             if classification == 'Negative':
                 neg += 1
