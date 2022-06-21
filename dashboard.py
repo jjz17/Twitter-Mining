@@ -50,8 +50,8 @@ def generate_control_card():
             dcc.Dropdown(
                 id="users-select",
                 options=[{"label": i, "value": i}
-                         for i in sentiment_data['User']],
-                value=sentiment_data['User'],
+                         for i in pd.concat([pd.Series('All'), sentiment_data['User']])],
+                value='All',
                 multi=True
             ),
             html.P("Sort By"),
@@ -182,8 +182,11 @@ app.layout = html.Div(
     Input("date-picker-select", "start_date"),
     Input("date-picker-select", "end_date"),)
 def update_bar_chart(users, sort, start, end):
-    mask = sentiment_data['User'].isin(users)
-    data = sentiment_data[mask]
+    if 'All' in users:
+        data = sentiment_data
+    else:
+        mask = sentiment_data['User'].isin(users)
+        data = sentiment_data[mask]
 
     if sort == 'Alphabetical':
         data = data.sort_values('User')
