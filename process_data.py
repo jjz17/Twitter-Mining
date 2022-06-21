@@ -73,7 +73,7 @@ def analyze_sentiment(file_path):
             Check if tweet has already been assigned sentiment classification
             '''
             if 'sentiment' in tweet:
-                print('Already classified')
+                # print('Already classified')
                 classification = tweet['sentiment']
             else:
                 # print(f'Tweet: {tweet["text"]}')
