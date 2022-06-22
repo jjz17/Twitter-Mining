@@ -4,6 +4,18 @@ from scipy.special import softmax
 from pprint import pprint
 from numpy import argmax
 import pandas as pd
+import pymongo
+from pymongo import MongoClient
+
+
+def get_mongo_data():
+    client = MongoClient()
+    db = client['socialAnalyticsDB']
+    collection = db['twitter']
+    data = []
+    for doc in collection.find():
+        data.append({'user': doc['user'], 'tweets': doc['tweets']})
+    return data
 
 
 def get_data_dict(file_path):
@@ -13,6 +25,83 @@ def get_data_dict(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
     return data
+
+
+def analyze_sent():
+    # Load model and tokenizer
+    roberta = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+
+    model = AutoModelForSequenceClassification.from_pretrained(roberta)
+    tokenizer = AutoTokenizer.from_pretrained(roberta)
+
+    labels = ['Negative', 'Neutral', 'Positive']
+
+    csv = pd.DataFrame(columns=['User', 'Negative', 'Neutral', 'Positive'])
+
+    # data = get_mongo_data()
+    client = MongoClient()
+    db = client['socialAnalyticsDB']
+    collection = db['twitter']
+    for doc in collection.find():
+        print('working...')
+        neg, neu, pos = 0, 0, 0
+        user = doc['user']
+        tweets = doc['tweets']
+        for tweet in tweets:
+
+            '''
+            Check if tweet has already been assigned sentiment classification
+            '''
+            if 'sentiment' in tweet:
+                # print('Already classified')
+                classification = tweet['sentiment']
+            else:
+                # print(f'Tweet: {tweet["text"]}')
+                processed_text = preprocess_text(tweet['text'])
+
+                # sentiment analysis
+                encoded_tweet = tokenizer(processed_text, return_tensors='pt')
+                # output = model(encoded_tweet['input_ids'], encoded_tweet['attention_mask'])
+                output = model(**encoded_tweet)
+
+                # Convert output pytorch tensor to numpy array by detaching the computational graph
+                scores = output[0][0].detach().numpy()
+                scores = softmax(scores)
+                ind = argmax(scores)
+
+                for label, score in zip(labels, scores):
+                    # print(f'\t{label}: {score}')
+                    pass
+
+                classification = labels[ind]
+            # print(f'Classification: {classification}')
+            if classification == 'Negative':
+                neg += 1
+            elif classification == 'Neutral':
+                neu += 1
+            else:
+                pos += 1
+            tweet['sentiment'] = classification
+        row = pd.DataFrame([{'User': user, 'Negative': neg,
+                            'Neutral': neu, 'Positive': pos}])
+        csv = pd.concat([csv, row], ignore_index=True)
+    # csv = csv.append(row, ignore_index=True)
+    print(csv)
+    csv.to_csv('sentiment.csv', index=False)
+    dump_data_dict(data, file_path)
+
+
+def generate_time_csv():
+    data = get_data_dict(file_path)
+    csv = pd.DataFrame(columns=['User', 'Text', 'Sentiment', 'Time'])
+    for user, tweets in data.items():
+        for tweet in tweets:
+            time = tweet['created_at'].split()
+            parsed_time = ' '.join([time[0], time[1], time[2], time[5]])
+            row = pd.DataFrame([{'User': user, 'Text': tweet['text'],
+                                 'Sentiment': tweet['sentiment'], 'Time': parsed_time}])
+            csv = pd.concat([csv, row], ignore_index=True)
+    csv.to_csv('time_tweet.csv', index=False)
 
 
 def get_text_data(file_path):
@@ -68,7 +157,6 @@ def analyze_sentiment(file_path):
         neg, neu, pos = 0, 0, 0
         for tweet in tweets:
 
-
             '''
             Check if tweet has already been assigned sentiment classification
             '''
@@ -119,7 +207,7 @@ def generate_timestamp_csv(file_path):
             time = tweet['created_at'].split()
             parsed_time = ' '.join([time[0], time[1], time[2], time[5]])
             row = pd.DataFrame([{'User': user, 'Text': tweet['text'],
-                        'Sentiment': tweet['sentiment'], 'Time': parsed_time}])
+                                 'Sentiment': tweet['sentiment'], 'Time': parsed_time}])
             csv = pd.concat([csv, row], ignore_index=True)
     csv.to_csv('time_tweet.csv', index=False)
 
