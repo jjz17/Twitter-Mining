@@ -18,3 +18,5 @@ Questions to answer:
 What are trends in the counts of pos/neu/neg posts over time (days)?
 Sort by sentiment?
 
+## IDEA
+Collect and process data in one step before pushing to mongo to reduce complexity
