@@ -1,3 +1,4 @@
+from time import time
 from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
@@ -6,19 +7,24 @@ sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
 time_data = pd.read_csv('time_tweet.csv')
 time_data['Time'] = pd.to_datetime(time_data['Time'])
-neg = time_data[time_data['Sentiment'] == 'Negative']
-neu = time_data[time_data['Sentiment'] == 'Neutral']
-pos = time_data[time_data['Sentiment'] == 'Positive']
-new_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
-for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']):
-    frame = frame.groupby('Time').count()
-    for i, date in enumerate(frame.index):
-        row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
-                             'Count': frame.loc[date]['User']}])
-        new_data = pd.concat([new_data, row], ignore_index=True)
+
 summary = time_data.groupby(['Time', ]).count()
 
 app = Dash(__name__)
+
+
+def get_time_line_data(df):
+    new_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
+    neg = df[df['Sentiment'] == 'Negative']
+    neu = df[df['Sentiment'] == 'Neutral']
+    pos = df[df['Sentiment'] == 'Positive']
+    for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']):
+        frame = frame.groupby('Time').count()
+        for i, date in enumerate(frame.index):
+            row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
+                                'Count': frame.loc[date]['User']}])
+            new_data = pd.concat([new_data, row], ignore_index=True)
+    return new_data
 
 
 def description_card():
@@ -192,7 +198,8 @@ def update_bar_chart(users, sort, start, end):
         data = data.sort_values('User')
         print(sort)
     elif sort == 'Tweet Count':
-        data['total count'] = data[['Negative', 'Neutral', 'Positive']].sum(axis=1)
+        data['total count'] = data[['Negative',
+                                    'Neutral', 'Positive']].sum(axis=1)
         data = data.sort_values('total count')
         data.drop('total count', axis=1, inplace=True)
         print(sort)
@@ -232,15 +239,22 @@ def display_hover_data(hoverData):
 )
 def update_summary(start, end):
     data = summary.loc[(summary.index >= start) & (summary.index <= end)]
-    fig = px.bar(data, x=data.index, y='User', title='Sample Title')
+    fig = px.bar(data, x=data.index, y='User', title='Total Tweets Retrieved by Day',
+                 labels={'Time': 'Day', 'User': 'Count'},)
     return fig
+
 
 @app.callback(
     Output('line', 'figure'),
     Input('users-select', 'value'),
     Input('sentiment-select', 'value'))
 def update_line_chart(users, sentiments):
-    line_data = new_data[new_data['Sentiment'].isin(sentiments)]
+    if users == 'All' or 'All' in users:
+        line_data = time_data
+    else:
+        line_data = time_data[time_data['User'].isin(users)]
+    line_data = get_time_line_data(line_data)
+    line_data = line_data[line_data['Sentiment'].isin(sentiments)]
     fig = px.line(line_data, x='Date', y='Count', color='Sentiment')
     return fig
 
