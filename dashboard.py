@@ -2,6 +2,7 @@ from time import time
 from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
+from pyparsing import col
 
 sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
@@ -84,6 +85,11 @@ def generate_control_card():
                 max_date_allowed=time_data['Time'].max(),
                 initial_visible_month=time_data['Time'].min(),
             ),
+            dcc.Checklist(
+                id='norm',
+                options=['Normalize'],
+                value=[]
+            )
             # html.Br(),
             # html.Br(),
             # html.P("Select Admit Source"),
@@ -247,17 +253,67 @@ def update_summary(start, end):
 @app.callback(
     Output('line', 'figure'),
     Input('users-select', 'value'),
-    Input('sentiment-select', 'value'))
-def update_line_chart(users, sentiments):
+    Input('sentiment-select', 'value'),
+    Input('norm', 'value'))
+def update_line_chart(users, sentiments, norm):
     if users == 'All' or 'All' in users:
         line_data = time_data
     else:
         line_data = time_data[time_data['User'].isin(users)]
     line_data = get_time_line_data(line_data)
     line_data = line_data[line_data['Sentiment'].isin(sentiments)]
-    fig = px.line(line_data, x='Date', y='Count', color='Sentiment')
+    if norm:
+        norm_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
+        for date in line_data['Date'].unique():
+            temp = line_data[line_data['Date'] == date]
+            sum = temp['Count'].sum()
+            for i, row in temp.iterrows():
+                norm_row = row
+                norm_row.loc['Count'] = row.loc['Count'] / sum
+                print(norm_row, type(norm_row))
+                norm_row = pd.DataFrame([{'Date': norm_row.loc['Date'], 'Sentiment': norm_row.loc['Sentiment'], 'Count': norm_row.loc['Count']}])
+                norm_data = pd.concat([norm_data, norm_row], ignore_index=True)
+            # row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
+            #                     'Count': frame.loc[date]['User']}])
+            # new_data = pd.concat([new_data, row], ignore_index=True)
+        line_data = norm_data
+        print(line_data)
+    fig = px.line(line_data, x='Date', y='Count', title='Trends in Sentiment Count', color='Sentiment')
     return fig
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+'''
+                   Date Sentiment Count
+0   2022-06-10 00:00:00  Negative     6
+1   2022-06-14 00:00:00  Negative    24
+2   2022-06-15 00:00:00  Negative    28
+3   2022-06-16 00:00:00  Negative    21
+4   2022-06-17 00:00:00  Negative    38
+5   2022-06-20 00:00:00  Negative    18
+6   2022-06-21 00:00:00  Negative    27
+7   2022-06-22 00:00:00  Negative    78
+8   2022-06-23 00:00:00  Negative    23
+9   2022-06-10 00:00:00   Neutral    20
+10  2022-06-14 00:00:00   Neutral    52
+11  2022-06-15 00:00:00   Neutral    52
+12  2022-06-16 00:00:00   Neutral    60
+13  2022-06-17 00:00:00   Neutral    51
+14  2022-06-20 00:00:00   Neutral    66
+15  2022-06-21 00:00:00   Neutral    58
+16  2022-06-22 00:00:00   Neutral   161
+17  2022-06-23 00:00:00   Neutral    60
+18  2022-06-10 00:00:00  Positive     4
+19  2022-06-14 00:00:00  Positive    24
+20  2022-06-15 00:00:00  Positive    20
+21  2022-06-16 00:00:00  Positive    19
+22  2022-06-17 00:00:00  Positive    11
+23  2022-06-20 00:00:00  Positive    16
+24  2022-06-21 00:00:00  Positive    15
+25  2022-06-22 00:00:00  Positive    61
+26  2022-06-23 00:00:00  Positive    17
+'''
