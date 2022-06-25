@@ -11,6 +11,9 @@ time_data['Time'] = pd.to_datetime(time_data['Time'])
 
 summary = time_data.groupby(['Time', ]).count()
 
+color_discrete_map = {
+    'Negative': 'rgb(181,14,5)', 'Neutral': 'rgb(230,195,21)', 'Positive': 'rgb(21, 150, 56)', 'Count': 'rgb(21, 150, 56)'}
+
 app = Dash(__name__)
 
 
@@ -87,7 +90,7 @@ def generate_control_card():
             ),
             dcc.Checklist(
                 id='norm',
-                options=['Normalize'],
+                options=['Normalize Line Data'],
                 value=[]
             )
             # html.Br(),
@@ -202,16 +205,12 @@ def update_bar_chart(users, sort, start, end):
 
     if sort == 'Alphabetical':
         data = data.sort_values('User')
-        print(sort)
     elif sort == 'Tweet Count':
         data['total count'] = data[['Negative',
                                     'Neutral', 'Positive']].sum(axis=1)
         data = data.sort_values('total count')
         data.drop('total count', axis=1, inplace=True)
-        print(sort)
 
-    color_discrete_map = {
-        'Negative': 'rgb(255,0,0)', 'Neutral': 'rgb(255,255,0)', 'Positive': 'rgb(0,255,0)'}
     fig = px.bar(data, x='User', y=[
                  'Negative', 'Neutral', 'Positive'],
                  labels={'value': 'Count', 'variable': 'Sentiment'},
@@ -231,7 +230,8 @@ def display_hover_data(hoverData):
     else:
         user = 'kennedyhall'
     fig = px.bar(sentiment_data[sentiment_data['User'] == user], x='User', y=[
-                 'Negative', 'Neutral', 'Positive'], title='Tweets by Selected User')
+                 'Negative', 'Neutral', 'Positive'], title='Tweets by Selected User',
+                 labels={'value': 'Count', 'variable': 'Sentiment'}, color_discrete_map=color_discrete_map)
     data = time_data[time_data['User'] == user]
     table_data = data.to_dict('records')
     columns = [{'name': i, 'id': i} for i in data.columns]
@@ -246,7 +246,7 @@ def display_hover_data(hoverData):
 def update_summary(start, end):
     data = summary.loc[(summary.index >= start) & (summary.index <= end)]
     fig = px.bar(data, x=data.index, y='User', title='Total Tweets Retrieved by Day',
-                 labels={'Time': 'Day', 'User': 'Count'},)
+                 labels={'Time': 'Day', 'User': 'Count'}, color_discrete_map=color_discrete_map)
     return fig
 
 
@@ -256,64 +256,34 @@ def update_summary(start, end):
     Input('sentiment-select', 'value'),
     Input('norm', 'value'))
 def update_line_chart(users, sentiments, norm):
+    # If all users are selected
     if users == 'All' or 'All' in users:
         line_data = time_data
     else:
         line_data = time_data[time_data['User'].isin(users)]
     line_data = get_time_line_data(line_data)
     line_data = line_data[line_data['Sentiment'].isin(sentiments)]
+    # If normalization is selected
     if norm:
         norm_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
+        # Calculate percentages for each date
         for date in line_data['Date'].unique():
             temp = line_data[line_data['Date'] == date]
             sum = temp['Count'].sum()
             for i, row in temp.iterrows():
                 norm_row = row
                 norm_row.loc['Count'] = row.loc['Count'] / sum
-                print(norm_row, type(norm_row))
-                norm_row = pd.DataFrame([{'Date': norm_row.loc['Date'], 'Sentiment': norm_row.loc['Sentiment'], 'Count': norm_row.loc['Count']}])
+                norm_row = pd.DataFrame(
+                    [{'Date': norm_row.loc['Date'], 'Sentiment': norm_row.loc['Sentiment'], 'Count': norm_row.loc['Count']}])
                 norm_data = pd.concat([norm_data, norm_row], ignore_index=True)
-            # row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
-            #                     'Count': frame.loc[date]['User']}])
-            # new_data = pd.concat([new_data, row], ignore_index=True)
         line_data = norm_data
-        print(line_data)
-    fig = px.line(line_data, x='Date', y='Count', title='Trends in Sentiment Count', color='Sentiment')
+        fig = px.line(line_data, x='Date', y='Count', title='Trends in Sentiment Frequency',
+                      color='Sentiment', labels={'Count': 'Percentage'}, color_discrete_map=color_discrete_map)
+    else:
+        fig = px.line(line_data, x='Date', y='Count',
+                      title='Trends in Sentiment Count', color='Sentiment', color_discrete_map=color_discrete_map)
     return fig
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-'''
-                   Date Sentiment Count
-0   2022-06-10 00:00:00  Negative     6
-1   2022-06-14 00:00:00  Negative    24
-2   2022-06-15 00:00:00  Negative    28
-3   2022-06-16 00:00:00  Negative    21
-4   2022-06-17 00:00:00  Negative    38
-5   2022-06-20 00:00:00  Negative    18
-6   2022-06-21 00:00:00  Negative    27
-7   2022-06-22 00:00:00  Negative    78
-8   2022-06-23 00:00:00  Negative    23
-9   2022-06-10 00:00:00   Neutral    20
-10  2022-06-14 00:00:00   Neutral    52
-11  2022-06-15 00:00:00   Neutral    52
-12  2022-06-16 00:00:00   Neutral    60
-13  2022-06-17 00:00:00   Neutral    51
-14  2022-06-20 00:00:00   Neutral    66
-15  2022-06-21 00:00:00   Neutral    58
-16  2022-06-22 00:00:00   Neutral   161
-17  2022-06-23 00:00:00   Neutral    60
-18  2022-06-10 00:00:00  Positive     4
-19  2022-06-14 00:00:00  Positive    24
-20  2022-06-15 00:00:00  Positive    20
-21  2022-06-16 00:00:00  Positive    19
-22  2022-06-17 00:00:00  Positive    11
-23  2022-06-20 00:00:00  Positive    16
-24  2022-06-21 00:00:00  Positive    15
-25  2022-06-22 00:00:00  Positive    61
-26  2022-06-23 00:00:00  Positive    17
-'''
