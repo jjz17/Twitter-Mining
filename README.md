@@ -24,3 +24,5 @@ Collect and process data in one step before pushing to mongo to reduce complexit
 Add Cards for KPI page which displays percentages of pos, neu, neg, count of tweets, most positive and most negative accounts
 
 Add button to dashboard to scrape daily data
+
+Research Instagram, Facebook, and other APIs to add additional analytics
