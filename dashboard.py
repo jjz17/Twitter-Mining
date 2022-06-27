@@ -3,7 +3,8 @@ from dash import Dash, dcc, html, Input, Output, dash_table
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
-from pyparsing import col
+
+from pages import page1
 
 sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
 # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
@@ -15,10 +16,10 @@ summary = time_data.groupby(['Time', ]).count()
 color_discrete_map = {
     'Negative': 'rgb(181,14,5)', 'Neutral': 'rgb(230,195,21)', 'Positive': 'rgb(21, 150, 56)', 'Count': 'rgb(21, 150, 56)'}
 
-app = Dash(__name__, 
-                external_stylesheets=[dbc.themes.BOOTSTRAP], 
-                meta_tags=[{"name": "viewport", "content": "width=device-width"}],
-                suppress_callback_exceptions=False)
+app = Dash(__name__,
+           external_stylesheets=[dbc.themes.BOOTSTRAP],
+           meta_tags=[{"name": "viewport", "content": "width=device-width"}],
+           suppress_callback_exceptions=False)
 
 
 def get_time_line_data(df):
@@ -43,12 +44,12 @@ def navbar():
             children=[
                 dbc.NavItem(dbc.NavLink("Page 1", href="/page1")),
                 dbc.NavItem(dbc.NavLink("Page 2", href="/page2")),
-            ] ,
+            ],
             brand="Multipage Dash App",
             brand_href="/page1",
             color="dark",
             dark=True,
-        ), 
+        ),
     ])
 
     return layout
@@ -179,7 +180,9 @@ app.layout = html.Div(
             className="banner",
             # children=[html.Img(src=app.get_asset_url("plotly_logo.png"))],
         ),
+        dcc.Location(id='url', refresh=False),
         navbar(),
+        # html.Div(id='page-content', children=[]),
         # Left column
         html.Div(
             id="left-column",
@@ -307,6 +310,15 @@ def update_line_chart(users, sentiments, norm):
         fig = px.line(line_data, x='Date', y='Count',
                       title='Trends in Sentiment Count', color='Sentiment', color_discrete_map=color_discrete_map)
     return fig
+
+
+# @app.callback(Output('page-content', 'children'),
+#               [Input('url', 'pathname')])
+# def display_page(pathname):
+#     if pathname == '/page1':
+#         return page1.layout
+#     else:
+#         return "404 Page Error! Please choose a link"
 
 
 if __name__ == '__main__':
