@@ -19,7 +19,7 @@ color_discrete_map = {
 app = Dash(__name__,
            external_stylesheets=[dbc.themes.BOOTSTRAP],
            meta_tags=[{"name": "viewport", "content": "width=device-width"}],
-           suppress_callback_exceptions=False)
+           suppress_callback_exceptions=True)
 
 
 def get_time_line_data(df):
@@ -136,6 +136,39 @@ def generate_control_card():
     )
 
 
+def home_content():
+    return html.Div(children=[
+        # Left column
+        html.Div(
+            id="left-column",
+            className="four columns",
+            children=[description_card(), generate_control_card()]
+            + [
+                    html.Div(
+                        ["initial child"], id="output-clientside", style={"display": "none"}
+                    )
+                    ],
+        ),
+        # Right column
+        html.Div(
+            id="right-column",
+            className="eight columns",
+            children=[
+                html.Div([
+                    dcc.Graph(id='bar'),
+                    dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+                # dcc.Graph(id='bar'),
+                # dcc.Graph(id='single'),
+                html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
+                    'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+                # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
+                #                      fixed_rows={'headers': True},
+                #                      style_table={'height': 400}, id='data')  # defaults to 500)
+                dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
+                                     style_table={'height': 400, 'overflowX': 'scroll'})
+            ],)
+    ])
+
 # app.layout = html.Div(
 #     children=[
 #         html.H1(children='Twitter Friends Analytics',),
@@ -182,37 +215,38 @@ app.layout = html.Div(
         ),
         dcc.Location(id='url', refresh=False),
         navbar(),
-        # html.Div(id='page-content', children=[]),
-        # Left column
-        html.Div(
-            id="left-column",
-            className="four columns",
-            children=[description_card(), generate_control_card()]
-            + [
-                html.Div(
-                    ["initial child"], id="output-clientside", style={"display": "none"}
-                )
-            ],
-        ),
-        # Right column
-        html.Div(
-            id="right-column",
-            className="eight columns",
-            children=[
-                html.Div([
-                    dcc.Graph(id='bar'),
-                    dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-                # dcc.Graph(id='bar'),
-                # dcc.Graph(id='single'),
-                html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
-                    'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-                # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
-                #                      fixed_rows={'headers': True},
-                #                      style_table={'height': 400}, id='data')  # defaults to 500)
-                dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
-                                     style_table={'height': 400, 'overflowX': 'scroll'})
-            ],
-        ),
+        html.Div(id='page-content', children=[
+            # # Left column
+            # html.Div(
+            #     id="left-column",
+            #     className="four columns",
+            #     children=[description_card(), generate_control_card()]
+            #     + [
+            #         html.Div(
+            #             ["initial child"], id="output-clientside", style={"display": "none"}
+            #         )
+            #     ],
+            # ),
+            # # Right column
+            # html.Div(
+            #     id="right-column",
+            #     className="eight columns",
+            #     children=[
+            #         html.Div([
+            #             dcc.Graph(id='bar'),
+            #             dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+            #         # dcc.Graph(id='bar'),
+            #         # dcc.Graph(id='single'),
+            #         html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
+            #             'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+            #         # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
+            #         #                      fixed_rows={'headers': True},
+            #         #                      style_table={'height': 400}, id='data')  # defaults to 500)
+            #         dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
+            #                              style_table={'height': 400, 'overflowX': 'scroll'})
+            #     ],)
+        ]
+        )
     ],
 )
 
@@ -312,13 +346,15 @@ def update_line_chart(users, sentiments, norm):
     return fig
 
 
-# @app.callback(Output('page-content', 'children'),
-#               [Input('url', 'pathname')])
-# def display_page(pathname):
-#     if pathname == '/page1':
-#         return page1.layout
-#     else:
-#         return "404 Page Error! Please choose a link"
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/':
+        return home_content()
+    elif pathname == '/page1':
+        return page1.layout
+    else:
+        return "404 Page Error! Please choose a link"
 
 
 if __name__ == '__main__':
