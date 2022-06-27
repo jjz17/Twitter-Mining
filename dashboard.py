@@ -15,7 +15,10 @@ summary = time_data.groupby(['Time', ]).count()
 color_discrete_map = {
     'Negative': 'rgb(181,14,5)', 'Neutral': 'rgb(230,195,21)', 'Positive': 'rgb(21, 150, 56)', 'Count': 'rgb(21, 150, 56)'}
 
-app = Dash(__name__)
+app = Dash(__name__, 
+                external_stylesheets=[dbc.themes.BOOTSTRAP], 
+                meta_tags=[{"name": "viewport", "content": "width=device-width"}],
+                suppress_callback_exceptions=False)
 
 
 def get_time_line_data(df):
@@ -176,6 +179,7 @@ app.layout = html.Div(
             className="banner",
             # children=[html.Img(src=app.get_asset_url("plotly_logo.png"))],
         ),
+        navbar(),
         # Left column
         html.Div(
             id="left-column",
