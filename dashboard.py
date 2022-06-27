@@ -1,5 +1,6 @@
 from time import time
 from dash import Dash, dcc, html, Input, Output, dash_table
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 from pyparsing import col
@@ -29,6 +30,25 @@ def get_time_line_data(df):
                                 'Count': frame.loc[date]['User']}])
             new_data = pd.concat([new_data, row], ignore_index=True)
     return new_data
+
+
+# Define the navbar structure
+def navbar():
+
+    layout = html.Div([
+        dbc.NavbarSimple(
+            children=[
+                dbc.NavItem(dbc.NavLink("Page 1", href="/page1")),
+                dbc.NavItem(dbc.NavLink("Page 2", href="/page2")),
+            ] ,
+            brand="Multipage Dash App",
+            brand_href="/page1",
+            color="dark",
+            dark=True,
+        ), 
+    ])
+
+    return layout
 
 
 def description_card():
