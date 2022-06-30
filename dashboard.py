@@ -142,12 +142,12 @@ def home_content():
         html.Div(
             id="left-column",
             className="four columns",
-            children=[description_card(), generate_control_card()]
-            + [
-                    html.Div(
-                        ["initial child"], id="output-clientside", style={"display": "none"}
-                    )
-                    ],
+            children=[description_card(), generate_control_card(),
+                    html.Div(["initial child"], id="output-clientside",
+                             style={"display": "none"}),
+                    html.Button('Collect Data', id='collect'),
+                    html.Div(id='collect_container')
+                      ],
         ),
         # Right column
         html.Div(
@@ -356,6 +356,15 @@ def display_page(pathname):
     else:
         return "404 Page Error! Please choose a link"
 
+
+@app.callback(Output('collect_container', 'children'),
+              Input('collect', 'n_clicks'))
+def collect_data(n_clicks):
+    if n_clicks:
+        # script_path = 'test1.py'
+        script_path = 'data_pipeline.py'
+        exec(open(script_path).read())
+        return html.Div(f'Data collected {n_clicks} time(s)')
 
 if __name__ == '__main__':
     app.run(debug=True)
