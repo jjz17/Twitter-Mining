@@ -8,8 +8,9 @@ sentiment_data['Neg%'] = sentiment_data['Negative'] / agg
 sentiment_data['Neu%'] = sentiment_data['Neutral'] / agg
 sentiment_data['Pos%'] = sentiment_data['Positive'] / agg
 sentiment_data.sort_values('Pos%', ascending=False, inplace=True)
-
-print(sentiment_data)
+pos = sentiment_data.loc[sentiment_data['Pos%'].idxmax()]
+neu = sentiment_data.loc[sentiment_data['Neu%'].idxmax()]
+neg = sentiment_data.loc[sentiment_data['Neg%'].idxmax()]
 
 # Define the page layout
 layout = dbc.Container([
@@ -29,9 +30,9 @@ layout = dbc.Container([
     ]),
     dbc.Row([
         dbc.Row([
-                dbc.Col(dbc.Card(html.P(f'Most positive friend: {sentiment_data["User"].iloc[0]}'))),
-                dbc.Col(dbc.Card(html.P('Card 2'))),
-                dbc.Col(dbc.Card(html.P('Card 2'))),
+                dbc.Col(dbc.Card(html.P(f'Most positive friend: {pos.loc["User"]}'))),
+                dbc.Col(dbc.Card(html.P(f'Most neutral friend: {neu.loc["User"]}'))),
+                dbc.Col(dbc.Card(html.P(f'Most negative friend: {neg.loc["User"]}'))),
                 ]),
         dbc.CardGroup([
             dbc.Card(html.P('Card 1', style={'border': '10'})),
