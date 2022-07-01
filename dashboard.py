@@ -42,6 +42,7 @@ def navbar():
     layout = html.Div([
         dbc.NavbarSimple(
             children=[
+                dbc.NavItem(dbc.NavLink("Home", href="/")),
                 dbc.NavItem(dbc.NavLink("Page 1", href="/page1")),
                 dbc.NavItem(dbc.NavLink("Page 2", href="/page2")),
             ],
@@ -169,40 +170,6 @@ def home_content():
             ],)
     ])
 
-# app.layout = html.Div(
-#     children=[
-#         html.H1(children='Twitter Friends Analytics',),
-#         html.P(
-#             children='Gain insights on the sentiment of your Twitter friends" recent posts.',
-#         ),
-#         dcc.Dropdown(
-#             id='dropdown',
-#             options=sentiment_data['User'],
-#             value=sentiment_data['User'],
-#             multi=True
-#         ), dcc.DatePickerRange(
-#             id='date-picker-select',
-#             start_date=time_data['Time'].min(),
-#             end_date=time_data['Time'].max(),
-#             min_date_allowed=time_data['Time'].min(),
-#             max_date_allowed=time_data['Time'].max(),
-#             initial_visible_month=time_data['Time'].min(),
-#         ),
-#         html.Div([
-#             dcc.Graph(id='bar'),
-#             dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-#         # dcc.Graph(id='bar'),
-#         # dcc.Graph(id='single'),
-#         html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
-#                  'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-#         # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
-#         #                      fixed_rows={'headers': True},
-#         #                      style_table={'height': 400}, id='data')  # defaults to 500)
-#         dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
-#                              style_table={'height': 400, 'overflowX': 'scroll'})
-#     ]
-# )
-
 
 app.layout = html.Div(
     id="app-container",
@@ -215,38 +182,7 @@ app.layout = html.Div(
         ),
         dcc.Location(id='url', refresh=False),
         navbar(),
-        html.Div(id='page-content', children=[
-            # # Left column
-            # html.Div(
-            #     id="left-column",
-            #     className="four columns",
-            #     children=[description_card(), generate_control_card()]
-            #     + [
-            #         html.Div(
-            #             ["initial child"], id="output-clientside", style={"display": "none"}
-            #         )
-            #     ],
-            # ),
-            # # Right column
-            # html.Div(
-            #     id="right-column",
-            #     className="eight columns",
-            #     children=[
-            #         html.Div([
-            #             dcc.Graph(id='bar'),
-            #             dcc.Graph(id='single')], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-            #         # dcc.Graph(id='bar'),
-            #         # dcc.Graph(id='single'),
-            #         html.Div([dcc.Graph(id='summary', figure=px.bar(summary, x=summary.index, y='User')), dcc.Graph(id='line')], style={
-            #             'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-            #         # dash_table.DataTable(time_data.to_dict('records'), [{"name": i, "id": i} for i in time_data.columns],
-            #         #                      fixed_rows={'headers': True},
-            #         #                      style_table={'height': 400}, id='data')  # defaults to 500)
-            #         dash_table.DataTable(id='data-table', fixed_rows={'headers': True},
-            #                              style_table={'height': 400, 'overflowX': 'scroll'})
-            #     ],)
-        ]
-        )
+        html.Div(id='page-content', children=[])
     ],
 )
 
@@ -364,7 +300,9 @@ def collect_data(n_clicks):
         # script_path = 'test1.py'
         script_path = 'data_pipeline.py'
         exec(open(script_path).read())
-        return html.Div(f'Data collected {n_clicks} time(s)')
+        # return html.Div(f'Data collected {n_clicks} time(s)')
+        return html.Div(f'Data collected successfully!')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
