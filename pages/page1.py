@@ -11,11 +11,14 @@ agg = sentiment_data['Negative'] + \
 sentiment_data['Neg%'] = sentiment_data['Negative'] / agg
 sentiment_data['Neu%'] = sentiment_data['Neutral'] / agg
 sentiment_data['Pos%'] = sentiment_data['Positive'] / agg
+sentiment_data['Total'] = sentiment_data[['Positive', 'Neutral', 'Negative']].sum(axis=1)
 sentiment_data.sort_values('Pos%', ascending=False, inplace=True)
 # Get DataFrame indices of rows with max in each column
 pos = sentiment_data.loc[sentiment_data['Pos%'].idxmax()]
 neu = sentiment_data.loc[sentiment_data['Neu%'].idxmax()]
 neg = sentiment_data.loc[sentiment_data['Neg%'].idxmax()]
+max_total = sentiment_data.loc[sentiment_data['Total'].idxmax()]
+min_total = sentiment_data.loc[sentiment_data['Total'].idxmin()]
 
 # Define the page layout
 layout = dbc.Container([
@@ -50,6 +53,10 @@ layout = dbc.Container([
                     dbc.Card(html.P(f'Most neutral friend: {neu.loc["User"]} with {neu.loc["Neu%"]*100}% neutrality'))),
                 dbc.Col(
                     dbc.Card(html.P(f'Most negative friend: {neg.loc["User"]} with {neg.loc["Neg%"]*100}% negativity'))),
+                dbc.Col(
+                    dbc.Card(html.P(f'Most frequently posting friend: {max_total.loc["User"]} with {max_total.loc["Total"]} posts'))),
+                dbc.Col(
+                    dbc.Card(html.P(f'Least frequently posting friend: {min_total.loc["User"]} with {min_total.loc["Total"]} posts'))),
                 ]),
         dbc.CardGroup([
             dbc.Card(html.P('Card 1', style={'border': '10'})),
