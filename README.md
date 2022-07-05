@@ -28,3 +28,5 @@ Add button to dashboard to scrape daily data
 Research Instagram, Facebook, and other APIs to add additional analytics
 
 Figure out callback functions in separate file, large Dash app structure
+
+Separate pages into different files
