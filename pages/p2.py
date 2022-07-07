@@ -1,6 +1,7 @@
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import pandas as pd
+from torch import positive
 
 # Import Dash Instance
 from app import app
@@ -13,7 +14,7 @@ def time_to_sent(data: pd.DataFrame) -> pd.DataFrame:
     '''
     data = data.drop(['Text'], axis=1)
     pt = pd.pivot_table(data, values='Time',index='User', columns='Sentiment', aggfunc='count').fillna(0)
-    return pt
+    return pt.reset_index()
 
 
 time_data = pd.read_csv('time_tweet.csv')
@@ -99,17 +100,17 @@ layout = dbc.Container([
     Input("date-picker-select2", "end_date"),
 )
 def update_cards(start, end):
-    # data = time_data.loc[(time_data['Time'] >= start)
-    #                      & (time_data['Time'] <= end)]
-    # temp_sentiment = time_to_sent(data)
-    # agg = temp_sentiment['Negative'] + \
-    #     temp_sentiment['Neutral'] + temp_sentiment['Positive']
-    # temp_sentiment['Neg%'] = temp_sentiment['Negative'] / agg
-    # temp_sentiment['Neu%'] = temp_sentiment['Neutral'] / agg
-    # temp_sentiment['Pos%'] = temp_sentiment['Positive'] / agg
-    # temp_sentiment['Total'] = temp_sentiment[[
-    #     'Positive', 'Neutral', 'Negative']].sum(axis=1)
+    data = time_data.loc[(time_data['Time'] >= start)
+                         & (time_data['Time'] <= end)]
+    temp_sentiment = time_to_sent(data)
+    temp_sentiment['Total'] = temp_sentiment[[
+        'Positive', 'Neutral', 'Negative']].sum(axis=1)
+    temp_sentiment['Neg%'] = temp_sentiment['Negative'] / temp_sentiment['Total']
+    temp_sentiment['Neu%'] = temp_sentiment['Neutral'] / temp_sentiment['Total']
+    temp_sentiment['Pos%'] = temp_sentiment['Positive'] / temp_sentiment['Total']
     # print(temp_sentiment)
-    # pos = temp_sentiment.loc[temp_sentiment['Pos%'].idxmax()]
-    # return html.P(f'Updated Most positive friend: {pos.loc["User"]} with {pos.loc["Pos%"]*100}% positivity')
-    return html.H1(f'Success {start}')
+    pos = temp_sentiment.loc[temp_sentiment['Pos%'].idxmax()]
+    print(pos)
+    # print(pos['User'])
+    return html.P(f'Updated Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity')
+    # return html.P(f'Success {pos}')
