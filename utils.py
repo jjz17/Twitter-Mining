@@ -93,7 +93,11 @@ def analyze_sentiment(text):
     return sentiment
 
 
-def time_to_sent(data):
+def time_to_sent(data: pd.DataFrame) -> pd.DataFrame:
     '''
-    Aggregate 
+    Aggregate sentiment counts per user with pivot tables
+    data has columns: User, Text, Sentiment, Time
     '''
+    data = data.drop(['Text'], axis=1)
+    pt = pd.pivot_table(data, values='Time',index='User', columns='Sentiment', aggfunc='count').fillna(0)
+    return pt
