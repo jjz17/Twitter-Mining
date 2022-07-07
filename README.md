@@ -30,3 +30,6 @@ Research Instagram, Facebook, and other APIs to add additional analytics
 Figure out callback functions in separate file, large Dash app structure
 
 Separate pages into different files
+
+### Structure multi-page Dash app
+https://peterhaas-me.medium.com/how-to-structure-a-multi-page-dash-app-32202ed51904

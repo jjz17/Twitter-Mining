@@ -50,6 +50,8 @@ page_container = html.Div(
 ### Index Page Layout ###
 index_layout = html.Div(
     children=[
+        html.H1('Welcome to your Personal Twitter Analytics Dashboard!')
+        ,
         dcc.Link(
             children='Go to Page 1',
             href='/p1',

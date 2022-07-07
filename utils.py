@@ -91,3 +91,9 @@ def analyze_sentiment(text):
 
     sentiment = labels[ind]
     return sentiment
+
+
+def time_to_sent(data):
+    '''
+    Aggregate 
+    '''
