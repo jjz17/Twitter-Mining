@@ -13,7 +13,8 @@ def time_to_sent(data: pd.DataFrame) -> pd.DataFrame:
     data has columns: User, Text, Sentiment, Time
     '''
     data = data.drop(['Text'], axis=1)
-    pt = pd.pivot_table(data, values='Time',index='User', columns='Sentiment', aggfunc='count').fillna(0)
+    pt = pd.pivot_table(data, values='Time', index='User',
+                        columns='Sentiment', aggfunc='count').fillna(0)
     return pt.reset_index()
 
 
@@ -67,13 +68,13 @@ layout = dbc.Container([
         max_date_allowed=time_data['Time'].max(),
         initial_visible_month=time_data['Time'].min(),
     ),
-    html.Div(id='test'),
+    # html.Div(id='test'),
     dbc.Row([
         dbc.Row([
                 dbc.Col(
-                    dbc.Card(id='pos', children=[html.P(f'Most positive friend: {pos.loc["User"]} with {pos.loc["Pos%"]*100}% positivity')])),
+                    dbc.Card(id='test', children=[html.P(f'Most positive friend: {pos.loc["User"]} with {pos.loc["Pos%"]*100}% positivity')])),
                 dbc.Col(
-                    dbc.Card(html.P(f'Most neutral friend: {neu.loc["User"]} with {neu.loc["Neu%"]*100}% neutrality'))),
+                    dbc.Card(id='test2', children=[html.P(f'Most neutral friend: {neu.loc["User"]} with {neu.loc["Neu%"]*100}% neutrality')])),
                 dbc.Col(
                     dbc.Card(html.P(f'Most negative friend: {neg.loc["User"]} with {neg.loc["Neg%"]*100}% negativity'))),
                 dbc.Col(
@@ -96,6 +97,7 @@ layout = dbc.Container([
 
 @app.callback(
     Output('test', 'children'),
+    Output('test2', 'children'),
     Input("date-picker-select2", "start_date"),
     Input("date-picker-select2", "end_date"),
 )
@@ -105,12 +107,16 @@ def update_cards(start, end):
     temp_sentiment = time_to_sent(data)
     temp_sentiment['Total'] = temp_sentiment[[
         'Positive', 'Neutral', 'Negative']].sum(axis=1)
-    temp_sentiment['Neg%'] = temp_sentiment['Negative'] / temp_sentiment['Total']
-    temp_sentiment['Neu%'] = temp_sentiment['Neutral'] / temp_sentiment['Total']
-    temp_sentiment['Pos%'] = temp_sentiment['Positive'] / temp_sentiment['Total']
+    temp_sentiment['Neg%'] = temp_sentiment['Negative'] / \
+        temp_sentiment['Total']
+    temp_sentiment['Neu%'] = temp_sentiment['Neutral'] / \
+        temp_sentiment['Total']
+    temp_sentiment['Pos%'] = temp_sentiment['Positive'] / \
+        temp_sentiment['Total']
     # print(temp_sentiment)
     pos = temp_sentiment.loc[temp_sentiment['Pos%'].idxmax()]
     print(pos)
     # print(pos['User'])
-    return html.P(f'Updated Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity')
+    return html.P(f'Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity'), html.P(f'Updated Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity')
+
     # return html.P(f'Success {pos}')
