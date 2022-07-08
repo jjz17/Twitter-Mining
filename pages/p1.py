@@ -41,7 +41,7 @@ def description_card():
     return html.Div(
         id='description-card',
         children=[
-            html.H5('Twitter Friends Analytics'),
+            # html.H5('Twitter Friends Analytics'),
             html.H3('Welcome to the Twitter Friends Analytics Dashboard'),
             html.Div(
                 id='intro',
@@ -71,7 +71,7 @@ def generate_control_card():
             dcc.Dropdown(
                 id='sort-select',
                 options=['Alphabetical', 'Tweet Count'],
-                # value='Alphabetical'
+                value='Alphabetical'
             ),
             html.P("Filter Sentiment"),
             dcc.Dropdown(
@@ -96,21 +96,6 @@ def generate_control_card():
                 options=['Normalize Line Data'],
                 value=[]
             )
-            # html.Br(),
-            # html.Br(),
-            # html.P("Select Admit Source"),
-            # dcc.Dropdown(
-            #     id="admit-select",
-            #     options=[{"label": i, "value": i} for i in admit_list],
-            #     value=admit_list[:],
-            #     multi=True,
-            # ),
-            # html.Br(),
-            # html.Div(
-            #     id="reset-btn-outer",
-            #     children=html.Button(
-            #         id="reset-btn", children="Reset", n_clicks=0),
-            # ),
         ],
     )
 

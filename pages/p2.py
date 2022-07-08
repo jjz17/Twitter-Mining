@@ -1,3 +1,4 @@
+from operator import inv
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -61,7 +62,7 @@ layout = dbc.Container([
     # ]),
     html.P("Select Target Post-Time Range"),
     dcc.DatePickerRange(
-        id="date-picker-select2",
+        id="date-picker-select",
         start_date=time_data['Time'].min(),
         end_date=time_data['Time'].max(),
         min_date_allowed=time_data['Time'].min(),
@@ -70,20 +71,20 @@ layout = dbc.Container([
     ),
     dbc.Row([
         dbc.Col(
-            dbc.Card(children=[html.P(id='pos')])),
+            dbc.Card(children=[dbc.CardHeader('Header'), html.P(id='pos')], color='success', outline=True)),
         dbc.Col(
-            dbc.Card(children=[html.P(id='neu')])),
+            dbc.Card(children=[html.P(id='neu')], color='warning')),
         dbc.Col(
-            dbc.Card(children=[html.P(id='neg')])),
+            dbc.Card(children=[html.P(id='neg')], color='danger')),
         dbc.Col(
             dbc.Card(children=[html.P(id='most-freq')])),
         dbc.Col(
             dbc.Card(children=[html.P(id='least-freq')])),
     ]),
-    dbc.CardGroup([
-        dbc.Card(html.P('Card 1', style={'border': '10'})),
-        dbc.Card(html.P('Card 2'))
-    ])
+    # dbc.CardGroup([
+    #     dbc.Card(html.P('Card 1', style={'border': '10'})),
+    #     dbc.Card(html.P('Card 2'))
+    # ])
 ])
 
 
@@ -93,8 +94,8 @@ layout = dbc.Container([
     Output('neg', 'children'),
     Output('most-freq', 'children'),
     Output('least-freq', 'children'),
-    Input("date-picker-select2", "start_date"),
-    Input("date-picker-select2", "end_date"),
+    Input("date-picker-select", "start_date"),
+    Input("date-picker-select", "end_date"),
 )
 def update_cards(start, end):
     data = time_data.loc[(time_data['Time'] >= start)

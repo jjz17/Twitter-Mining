@@ -16,8 +16,8 @@ def navbar():
         dbc.NavbarSimple(
             children=[
                 dbc.NavItem(dbc.NavLink("Home", href="/")),
-                dbc.NavItem(dbc.NavLink("Page 1", href="/p1")),
-                dbc.NavItem(dbc.NavLink("Page 2", href="/p2")),
+                dbc.NavItem(dbc.NavLink("Charts", href="/p1")),
+                dbc.NavItem(dbc.NavLink("Insights", href="/p2")),
             ],
             brand="Twitter Friends Analytics",
             brand_href="/",
