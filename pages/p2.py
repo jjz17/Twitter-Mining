@@ -68,36 +68,31 @@ layout = dbc.Container([
         max_date_allowed=time_data['Time'].max(),
         initial_visible_month=time_data['Time'].min(),
     ),
-    # html.Div(id='test'),
     dbc.Row([
-        dbc.Row([
-                dbc.Col(
-                    dbc.Card(id='test', children=[html.P(f'Most positive friend: {pos.loc["User"]} with {pos.loc["Pos%"]*100}% positivity')])),
-                dbc.Col(
-                    dbc.Card(id='test2', children=[html.P(f'Most neutral friend: {neu.loc["User"]} with {neu.loc["Neu%"]*100}% neutrality')])),
-                dbc.Col(
-                    dbc.Card(html.P(f'Most negative friend: {neg.loc["User"]} with {neg.loc["Neg%"]*100}% negativity'))),
-                dbc.Col(
-                    dbc.Card(html.P(f'Most frequently posting friend: {max_total.loc["User"]} with {max_total.loc["Total"]} posts'))),
-                dbc.Col(
-                    dbc.Card(html.P(f'Least frequently posting friend: {min_total.loc["User"]} with {min_total.loc["Total"]} posts'))),
-                dbc.Card(html.P(
-                    f'Most positive friend: {pos.loc["User"]} with {pos.loc["Pos%"]*100}% positivity')),
-
-                dbc.Card(html.P(
-                    f'Most neutral friend: {neu.loc["User"]} with {neu.loc["Neu%"]*100}% neutrality')),
-                ]),
-        dbc.CardGroup([
-            dbc.Card(html.P('Card 1', style={'border': '10'})),
-            dbc.Card(html.P('Card 2'))
-        ])
+        dbc.Col(
+            dbc.Card(children=[html.P(id='pos')])),
+        dbc.Col(
+            dbc.Card(children=[html.P(id='neu')])),
+        dbc.Col(
+            dbc.Card(children=[html.P(id='neg')])),
+        dbc.Col(
+            dbc.Card(children=[html.P(id='most-freq')])),
+        dbc.Col(
+            dbc.Card(children=[html.P(id='least-freq')])),
+    ]),
+    dbc.CardGroup([
+        dbc.Card(html.P('Card 1', style={'border': '10'})),
+        dbc.Card(html.P('Card 2'))
     ])
 ])
 
 
 @app.callback(
-    Output('test', 'children'),
-    Output('test2', 'children'),
+    Output('pos', 'children'),
+    Output('neu', 'children'),
+    Output('neg', 'children'),
+    Output('most-freq', 'children'),
+    Output('least-freq', 'children'),
     Input("date-picker-select2", "start_date"),
     Input("date-picker-select2", "end_date"),
 )
@@ -115,8 +110,11 @@ def update_cards(start, end):
         temp_sentiment['Total']
     # print(temp_sentiment)
     pos = temp_sentiment.loc[temp_sentiment['Pos%'].idxmax()]
-    print(pos)
+    neu = temp_sentiment.loc[temp_sentiment['Neu%'].idxmax()]
+    neg = temp_sentiment.loc[temp_sentiment['Neg%'].idxmax()]
+    max_total = temp_sentiment.loc[temp_sentiment['Total'].idxmax()]
+    min_total = temp_sentiment.loc[temp_sentiment['Total'].idxmin()]
+    # print(pos)
     # print(pos['User'])
-    return html.P(f'Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity'), html.P(f'Updated Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity')
-
+    return f'Most positive friend: {pos["User"]} with {pos["Pos%"]*100}% positivity', f'Most neutral friend: {neu["User"]} with {neu["Neu%"]*100}% neutrality', f'Most negative friend: {neg["User"]} with {neg["Neg%"]*100}% negativity', f'Most frequent poster: {max_total["User"]} with {max_total["Total"]} posts', f'Least frequent poster: {min_total["User"]} with {min_total["Total"]} posts'
     # return html.P(f'Success {pos}')
