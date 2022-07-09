@@ -214,27 +214,40 @@ def update_line_chart(users, sentiments, norm):
         line_data = time_data
     else:
         line_data = time_data[time_data['User'].isin(users)]
-    line_data = get_time_line_data(line_data)
-    line_data = line_data[line_data['Sentiment'].isin(sentiments)]
-    # If normalization is selected
+    # line_data = get_time_line_data(line_data)
+    # line_data = line_data[line_data['Sentiment'].isin(sentiments)]
+    # # If normalization is selected
+    # if norm:
+    #     norm_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
+    #     # Calculate percentages for each date
+    #     for date in line_data['Date'].unique():
+    #         temp = line_data[line_data['Date'] == date]
+    #         sum = temp['Count'].sum()
+    #         for i, row in temp.iterrows():
+    #             norm_row = row
+    #             norm_row.loc['Count'] = row.loc['Count'] / sum
+    #             norm_row = pd.DataFrame(
+    #                 [{'Date': norm_row.loc['Date'], 'Sentiment': norm_row.loc['Sentiment'], 'Count': norm_row.loc['Count']}])
+    #             norm_data = pd.concat([norm_data, norm_row], ignore_index=True)
+    #     line_data = norm_data
+    #     fig = px.line(line_data, x='Date', y='Count', title='Trends in Sentiment Frequency',
+    #                   color='Sentiment', labels={'Count': 'Percentage'}, color_discrete_map=color_discrete_map)
+    # else:
+    #     fig = px.line(line_data, x='Date', y='Count',
+    #                   title='Trends in Sentiment Count', color='Sentiment', color_discrete_map=color_discrete_map)
+    line_data = pd.pivot_table(line_data, values='User', index='Time', columns='Sentiment', aggfunc='count')
+    # Select subset of desired sentiment columns
+    line_data = line_data[sentiments]
+    pd.options.plotting.backend = 'plotly'
+    fig = line_data.plot(y=sentiments, title='Trends in Sentiment Count', color_discrete_map=color_discrete_map, labels={'variable': 'Sentiment', 'value': 'Count'})
     if norm:
-        norm_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
-        # Calculate percentages for each date
-        for date in line_data['Date'].unique():
-            temp = line_data[line_data['Date'] == date]
-            sum = temp['Count'].sum()
-            for i, row in temp.iterrows():
-                norm_row = row
-                norm_row.loc['Count'] = row.loc['Count'] / sum
-                norm_row = pd.DataFrame(
-                    [{'Date': norm_row.loc['Date'], 'Sentiment': norm_row.loc['Sentiment'], 'Count': norm_row.loc['Count']}])
-                norm_data = pd.concat([norm_data, norm_row], ignore_index=True)
-        line_data = norm_data
-        fig = px.line(line_data, x='Date', y='Count', title='Trends in Sentiment Frequency',
-                      color='Sentiment', labels={'Count': 'Percentage'}, color_discrete_map=color_discrete_map)
-    else:
-        fig = px.line(line_data, x='Date', y='Count',
-                      title='Trends in Sentiment Count', color='Sentiment', color_discrete_map=color_discrete_map)
+        line_data['Total'] = line_data[sentiments].sum(axis=1)
+        # line_data['Negative'] = line_data['Negative'] / line_data['Total']
+        # line_data['Neutral'] = line_data['Neutral'] / line_data['Total']
+        # line_data['Positive'] = line_data['Positive'] / line_data['Total']
+        for sentiment in sentiments:
+            line_data[sentiment] = line_data[sentiment] / line_data['Total']
+            fig = line_data.plot(y=sentiments, title='Trends in Sentiment Frequency', color_discrete_map=color_discrete_map, labels={'variable': 'Sentiment', 'value': 'Percentage'})
     return fig
 
 
