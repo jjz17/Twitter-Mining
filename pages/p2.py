@@ -71,15 +71,15 @@ layout = dbc.Container([
     ),
     dbc.Row([
         dbc.Col(
-            dbc.Card(children=[dbc.CardHeader('Header'), html.P(id='pos')], color='success', outline=True)),
+            dbc.Card(children=[dbc.CardHeader('Most Positive Friend:'), html.P(id='pos')], color='success', outline=True)),
         dbc.Col(
-            dbc.Card(children=[html.P(id='neu')], color='warning')),
+            dbc.Card(children=[dbc.CardHeader('Most Neutral Friend:'), html.P(id='neu')], color='warning', outline=True)),
         dbc.Col(
-            dbc.Card(children=[html.P(id='neg')], color='danger')),
+            dbc.Card(children=[dbc.CardHeader('Most Negative Friend:'), html.P(id='neg')], color='danger', outline=True)),
         dbc.Col(
-            dbc.Card(children=[html.P(id='most-freq')])),
+            dbc.Card(children=[dbc.CardHeader('Most Frequent Poster:'), html.P(id='most-freq')], color='primary', outline=True)),
         dbc.Col(
-            dbc.Card(children=[html.P(id='least-freq')])),
+            dbc.Card(children=[dbc.CardHeader('Least Frequent Poster:'), html.P(id='least-freq')], color='info', outline=True)),
     ]),
     # dbc.CardGroup([
     #     dbc.Card(html.P('Card 1', style={'border': '10'})),
