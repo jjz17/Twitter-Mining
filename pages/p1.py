@@ -7,31 +7,33 @@ import plotly.express as px
 from app import app
 
 
-sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
-# sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
-time_data = pd.read_csv('time_tweet.csv')
-time_data['Time'] = pd.to_datetime(time_data['Time'])
-
-summary = time_data.groupby(['Time', ]).count()
-
 color_discrete_map = {
     'Negative': 'rgb(181,14,5)', 'Neutral': 'rgb(230,195,21)', 'Positive': 'rgb(21, 150, 56)', 'Count': 'rgb(21, 150, 56)'}
 
 
 # Layout and Callbacks
 
-def get_time_line_data(df):
-    new_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
-    neg = df[df['Sentiment'] == 'Negative']
-    neu = df[df['Sentiment'] == 'Neutral']
-    pos = df[df['Sentiment'] == 'Positive']
-    for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']):
-        frame = frame.groupby('Time').count()
-        for i, date in enumerate(frame.index):
-            row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
-                                'Count': frame.loc[date]['User']}])
-            new_data = pd.concat([new_data, row], ignore_index=True)
-    return new_data
+def get_data():
+    sentiment_data = pd.read_csv('sentiment.csv').sort_values('User')
+    # sentiment_data = sentiment_data.query("User == 'NovusOrdoWatch'")
+    time_data = pd.read_csv('time_tweet.csv')
+    time_data['Time'] = pd.to_datetime(time_data['Time'])
+    summary = time_data.groupby(['Time', ]).count()
+    return sentiment_data, time_data, summary
+
+
+# def get_time_line_data(df):
+#     new_data = pd.DataFrame(columns=['Date', 'Sentiment', 'Count'])
+#     neg = df[df['Sentiment'] == 'Negative']
+#     neu = df[df['Sentiment'] == 'Neutral']
+#     pos = df[df['Sentiment'] == 'Positive']
+#     for frame, sentiment in zip([neg, neu, pos], ['Negative', 'Neutral', 'Positive']):
+#         frame = frame.groupby('Time').count()
+#         for i, date in enumerate(frame.index):
+#             row = pd.DataFrame([{'Date': date, 'Sentiment': sentiment,
+#                                 'Count': frame.loc[date]['User']}])
+#             new_data = pd.concat([new_data, row], ignore_index=True)
+#     return new_data
 
 
 def description_card():
@@ -56,6 +58,7 @@ def generate_control_card():
     '''
     Returns a div containing controls for the graphs
     '''
+    sentiment_data, time_data, summary = get_data()
     return html.Div(
         id="control-card",
         children=[
@@ -101,6 +104,7 @@ def generate_control_card():
 
 
 def home_content():
+    sentiment_data, time_data, summary = get_data()
     return html.Div(children=[
         # Left column
         html.Div(
@@ -140,9 +144,6 @@ Layout
 layout = home_content()
 
 
-
-
-
 @app.callback(
     Output('bar', 'figure'),
     Input('users-select', 'value'),
@@ -150,6 +151,7 @@ layout = home_content()
     Input("date-picker-select", "start_date"),
     Input("date-picker-select", "end_date"),)
 def update_bar_chart(users, sort, start, end):
+    sentiment_data, time_data, summary = get_data()
     if 'All' in users:
         data = sentiment_data
     else:
@@ -178,6 +180,7 @@ def update_bar_chart(users, sort, start, end):
     Output('data-table', 'columns'),
     Input('bar', 'hoverData'))
 def display_hover_data(hoverData):
+    sentiment_data, time_data, summary = get_data()
     if hoverData:
         user = hoverData['points'][0]['x']
     else:
@@ -197,6 +200,7 @@ def display_hover_data(hoverData):
     Input("date-picker-select", "end_date"),
 )
 def update_summary(start, end):
+    sentiment_data, time_data, summary = get_data()
     data = summary.loc[(summary.index >= start) & (summary.index <= end)]
     fig = px.bar(data, x=data.index, y='User', title='Total Tweets Retrieved by Day',
                  labels={'Time': 'Day', 'User': 'Count'}, color_discrete_map=color_discrete_map)
@@ -209,22 +213,26 @@ def update_summary(start, end):
     Input('sentiment-select', 'value'),
     Input('norm', 'value'))
 def update_line_chart(users, sentiments, norm):
+    sentiment_data, time_data, summary = get_data()
     # If all users are selected
     if users == 'All' or 'All' in users:
         line_data = time_data
     else:
         line_data = time_data[time_data['User'].isin(users)]
-    line_data = pd.pivot_table(line_data, values='User', index='Time', columns='Sentiment', aggfunc='count')
+    line_data = pd.pivot_table(
+        line_data, values='User', index='Time', columns='Sentiment', aggfunc='count')
     # Select subset of desired sentiment columns
     line_data = line_data[sentiments]
     pd.options.plotting.backend = 'plotly'
-    fig = line_data.plot(y=sentiments, title='Trends in Sentiment Count', color_discrete_map=color_discrete_map, labels={'variable': 'Sentiment', 'value': 'Count'})
+    fig = line_data.plot(y=sentiments, title='Trends in Sentiment Count',
+                         color_discrete_map=color_discrete_map, labels={'variable': 'Sentiment', 'value': 'Count'})
     if norm:
         line_data['Total'] = line_data[sentiments].sum(axis=1)
         # Scale all sentiments to their percentages
         for sentiment in sentiments:
             line_data[sentiment] = line_data[sentiment] / line_data['Total']
-            fig = line_data.plot(y=sentiments, title='Trends in Sentiment Frequency', color_discrete_map=color_discrete_map, labels={'variable': 'Sentiment', 'value': 'Percentage'})
+            fig = line_data.plot(y=sentiments, title='Trends in Sentiment Frequency', color_discrete_map=color_discrete_map, labels={
+                                 'variable': 'Sentiment', 'value': 'Percentage'})
     return fig
 
 
