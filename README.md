@@ -19,7 +19,7 @@ What are trends in the counts of pos/neu/neg posts over time (days)?
 Sort by sentiment?
 
 ## IDEA
-Collect and process data in one step before pushing to mongo to reduce complexity
+Generate sentiment csv from time csv
 
 Add Cards for KPI page which displays percentages of pos, neu, neg, count of tweets, most positive and most negative accounts
 
