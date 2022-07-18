@@ -19,6 +19,8 @@ What are trends in the counts of pos/neu/neg posts over time (days)?
 Sort by sentiment?
 
 ## IDEA
+Find labeled tweet dataset online and use to test multiple prebuilt models using various metrics
+
 Generate sentiment csv from time csv
 
 Add Cards for KPI page which displays percentages of pos, neu, neg, count of tweets, most positive and most negative accounts
